@@ -20,15 +20,8 @@ function draw() {
 
   // IMAGE SIZE //
   imAspect = 900/1200
-  if (windowWidth <= windowHeight){
-    imageWidth = windowWidth;
-    imageHeight = imageWidth*imAspect;
-  }
-  else {
-    imageHeight = windowHeight;
-    imageWidth = imageHeight/imAspect;
-    
-  }
+  imageWidth = windowWidth*0.8;
+  imageHeight = imageWidth*imAspect;
   image(img, X_(0), Y_(0), imageWidth, imageHeight);
 
   // CANDLE COORDS //
@@ -116,22 +109,22 @@ function drawFlame(candleX,candleTopY,flameSize=1) {
 
 function pickUpIpad(ipadPickWidth,ipadPickHeight){
   fill(100)
-  rect(X_(windowWidth/2 - ipadPickWidth/2), Y_(100), ipadPickWidth, ipadPickHeight)
+  rect(X_(imageWidth/2 - ipadPickWidth/2), Y_(100), ipadPickWidth, ipadPickHeight)
   let c = color('#99FFFF')
   c.setAlpha(100)
   fill(c)
   rect(0,0,windowWidth,windowHeight)
   fill(255)
-  rect(X_(windowWidth/2 - ipadPickWidth*.9/2), Y_(100+(ipadPickHeight*.1/2)), ipadPickWidth*.9, ipadPickHeight*.9)
+  rect(X_(imageWidth/2 - ipadPickWidth*.9/2), Y_(100+(ipadPickHeight*.1/2)), ipadPickWidth*.9, ipadPickHeight*.9)
 
   let obit1 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 3rd, 2024.  Those who gathered report he died with a smile on his face. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He married his girl-of-three-doors-down Mallory Dobry neé Nesbitt in 2000."
   let obit2 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 3rd, 2024.  Despite what you might have been told, he died with a smile on his face. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He married his girl-of-three-doors-down Mallory Dobry neé Nesbitt in 2000."
   fill(0)
   if (clicks <= 1) {
-    text(obit1, X_(485), Y_(195), 280, 570)
+    text(obit1, X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(195), X_(350,adjust=false), Y_(570))
   }
   else {
-    text(obit2, X_(485), Y_(195), 280, 570)
+    text(obit2, X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(195), X_(350,adjust=false), Y_(570))
   }
 }
 
@@ -150,20 +143,20 @@ function mouseClicked(){
 
 /// COORDINATE ADJUSTMENT FUNCTIONS ///
 
-function X_(input, adjust=true, imageWidth=1200, coordWidth=1200) {
+function X_(input, adjust=true, coordWidth=1200) {
   // imageWidth is the actual width of the image in pixels
   // and coordWidth is the number input by the user for the 
   // coordinate system
   xAdjust = (windowWidth - imageWidth)/2; // adjustment to center image
   if (adjust == true) {
-    return input/coordWidth * imageWidth //+ xAdjust
+    return input/coordWidth * imageWidth + xAdjust
   }
   else {
     return input/coordWidth * imageWidth
   }
 }
 
-function Y_(input, imageHeight=900, coordHeight=900) {
+function Y_(input, coordHeight=900) {
   // imageHeight is the actual height of the image in pixels
   // and coordHeight is the number input by the user for the 
   // coordinate system
