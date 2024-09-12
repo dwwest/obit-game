@@ -14,6 +14,11 @@ function preload(){
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  // smokeParticles = [];
+
+  // for ( let i = 0; i < 200; i++) {
+  //   smokeParticles.push(new SmokeParticle());
+  // }
 }
 
 function draw() {
@@ -61,6 +66,7 @@ function draw() {
   // }
 
   // DRAW OBJECTS //
+
   // if (frameCount > 500) {
   //   blackout()
   // }
@@ -74,12 +80,12 @@ function draw() {
     drawFlame(candleX,candleTopY)
   }
   else {
-    snuffedOut()
+    // snuffedOut()
   }
   
-  // if (frameCount > 400) {
-  //   blackout()
-  // }
+  if (frameCount > 400) {
+    blackout()
+  }
 
   if (frameCount < 100 || pickUp == true){
     ipadFlicker(ipadXBounds, ipadYBounds)
@@ -104,14 +110,14 @@ function draw() {
     pickUpIpad(ipadPickWidth, ipadPickHeight)
   }
 
-  // if (frameCount > 500 && frameCount < 510) {
-  //   boo()
-  // }
+  if (frameCount > 500 && frameCount < 510) {
+    boo()
+  }
 
-  // if (frameCount > 510) {
-  //   fill('black')
-  //   rect(X_(0), Y_(0), X_(1200, adjust=0), Y_(900))
-  // }
+  if (frameCount > 510) {
+    fill('black')
+    rect(X_(0), Y_(0), X_(1200, adjust=0), Y_(900))
+  }
 }
 
 function drawCandle(candleX,candleTopY,candleBottomY,candleRound,candleHeight,candleWidth) {
@@ -173,10 +179,25 @@ function pickUpIpad(ipadPickWidth,ipadPickHeight){
   fill(255)
   rect(X_(imageWidth/2 - ipadPickWidth*.9/2), Y_(100+(ipadPickHeight*.1/2)), ipadPickWidth*.9, ipadPickHeight*.9)
 
-  let obit1 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 3rd, 2024.  Those who gathered report he died with a smile on his face. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He married his girl-of-three-doors-down Mallory Dobry neé Nesbitt in 2000."
-  let obit2 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 3rd, 2024.  Despite what you might have been told, he died with a smile on his face. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He married his girl-of-three-doors-down Mallory Dobry neé Nesbitt in 2000."
+  let obit1 = ["Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 31rd, 2024.  Those who gathered report he died with a smile on his face.",
+	"Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his loving wife of 24 years, Mallory Dobry neé Nesbitt, and his daughter, Amanda Dobry.",
+	"Jacob worked for many years in the financial industry.  In the five years before his death, he devoted himself to the Church of the Mind, becoming a pillar of the spiritual community.  Those who knew Jacob described him as happy and hardworking, good and strong.  He will be greatly missed.",
+	"A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm in the same old church he and his wife were married."]
+  let obit2 = ["Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 31rd, 2024.  Those who gathered report he died with a smile on his face, though you doubt their word.",
+	"Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his loving wife of 24 years, Mallory Dobry neé Nesbitt, and you, his daughter.",
+	"Jacob worked for many years in the financial industry.  In the five years before his death, he devoted himself to the Church of the Mind, becoming a pillar of the spiritual community.  You didn't know he'd joined the Church of the Mind for many years.  Not until it was too late.  Those who knew Jacob described him as happy and hardworking, good and strong.  Your own mother called him bottled up.  Her mother called him, 'just a man, what did you expect?' You called him unstable.  He called you a worry wart.",
+	"A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm in the same old church he used to take you."]
+  let obit3 = ["Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 3rd, 2024.  Those who gathered report he died with a smile on his face, though you doubt their word.",
+	"Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his estranged wife, Mallory Dolbry and he is survived by you, his ever-hating daughter.",
+	"He told you he joined the church at Christmas.  He told you he planned to give Us his mind over mashed potatoes and dry turkey.  He had to explain it to you, to describe the incredible meetings he’d been to, the process of cranial insertion.  He tried to describe the beautiful void of connection and love shared without walls, but you wouldn’t listen.",
+	"Mallory called you selfish.  Jacob called you nothing at all.  By then he was no longer just himself.",
+	"You see Us as grotesque.  Unnatural.  As though you yourself are not composed of four billion odd neurons.  Where do you end and your pieces begin?",
+  "A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm in the same old church he and Mallory were married."]
+  let obit4 = ["We will be there.", "We’ve been waiting for you."]
+
   fill(0)
   if (clicks <= 1) {
+    for (line in obit1)
     text(obit1, X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(195), X_(350,adjust=false), Y_(570))
   }
   else {
@@ -223,8 +244,12 @@ function thePlantsHaveEyes() {
 }
 
 function snuffedOut(){
-
+  for (let particle of smokeParticles) {
+    particle.update(frameCount - 200)
+    particle.display()
+  }
 }
+
 
 function blackout() {
   c = color('black')
@@ -248,9 +273,9 @@ function boo() {
 
 class SmokeParticle {
   constructor() {
-    this.posX = 0;
-    this.posY = 0;
-    this.radius = 1;
+    this.posX = X_(100);
+    this.posY = Y_(300);
+    this.radius = 5;
     this.color = color('white');
     this.color.setAlpha(40);
     this.lifespan = 200;
@@ -262,10 +287,6 @@ class SmokeParticle {
     let ySpeed = 8 
     this.posY += ySpeed;
 
-    // When snowflake reaches the top, delete
-    if (this.posY > height) {
-      this.posY = -50;
-    }
   }
 
   run() {
