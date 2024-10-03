@@ -8,18 +8,26 @@ function preload(){
   img = loadImage('apartment.png')
   face = loadImage('scary_face_cropped.jpg')
   jumpscare = loadImage('scary_face.jpg')
+  gear = loadImage('gear.png')
   pickUp = false
+  settingsOpen = false
   clicks = 0
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   lastPutDown = 0;
-  // smokeParticles = [];
+}
 
-  // for ( let i = 0; i < 200; i++) {
-  //   smokeParticles.push(new SmokeParticle());
+function adjust_brightness(bright_mod) {
+  // img.loadPixels();
+  // for (let x = 0; x < img.width; x += 1) {
+  //   for (let y = 0; y < img.height; y += 1) {
+  //     pix = img.get(x, y)
+  //     img.set(x, y, [pix[0]+bright_mod, pix[1]+bright_mod, pix[2]+bright_mod, 255]);
+  //   }
   // }
+  // img.updatePixels();
 }
 
 function draw() {
@@ -30,13 +38,31 @@ function draw() {
   imAspect = 900/1200
   imageWidth = windowWidth*0.8;
   imageHeight = imageWidth*imAspect;
-
+  
   // DRAW APARTMENT //
+  if (frameCount % 10 == 0) {
+    adjust_brightness(10)
+  }
+
   image(img, X_(0), Y_(0), imageWidth, imageHeight);
+
+  // SHADOW ON PHOTO //
   c = color('black')
   c.setAlpha(140)
   fill(c)
   rect(X_(560), Y_(150), X_(150, adjust=false), Y_(180))
+
+  // SETTINGS MENU //
+  settingsX = 1100
+  settingsY = 40
+  settingsD = 40
+  c = color('gray')
+  c.setAlpha(110)
+  fill(c)
+  circle(X_(settingsX), Y_(settingsY), Y_(settingsD))
+  // todo: make the gear image dependent on settings xyr
+  image(gear, X_(1090), Y_(30), X_(20, adjust=false), Y_(20))
+  openSettings(settingsOpen)
   
   // CANDLE COORDS //
   candleX = X_(451); candleTopY = Y_(510); candleBottomY = Y_(525); candleRound = Y_(8);
@@ -53,20 +79,6 @@ function draw() {
   ipadPickHeight = 700;
 
   // EVENTS //
-  // if (clicks >= 1) {
-  //   fill(10)
-  //   circle(790, 230, 20)
-  //   circle(770, 250, 20)
-  // }
-  // if (clicks >= 2) {
-  //   let c = color(20)
-  //   c.setAlpha(50)
-  //   fill(c)
-  //   circle(580+sin(frameCount/10), 450, 20)
-  //   circle(630+sin(frameCount/10), 450, 20)
-  // }
-
-  // DRAW OBJECTS //
 
   if (clicks >= 2) {
     skullFlash()
@@ -91,14 +103,6 @@ function draw() {
     ipadFlicker(ipadXBounds, ipadYBounds, false)
   }
 
-  // DRAW CURSOR //
-  if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && clicks < 4) {
-    cursor(HAND)
-  }
-  else {
-    cursor(ARROW)
-  }
-
   if (clicks == 3 && frameCount - lastPutDown < 10) {
     thePlantsHaveEyes()
   }
@@ -107,14 +111,26 @@ function draw() {
     pickUpIpad(ipadPickWidth, ipadPickHeight)
   }
 
-  if (clicks >= 4 && frameCount - lastPutDown > 100 && frameCount - lastPutDown < 110) {
+  if (clicks == 4 && pickUp == false && frameCount - lastPutDown > 100 && frameCount - lastPutDown < 110) {
     boo()
   }
 
-  if (clicks >= 4 && frameCount - lastPutDown > 120) {
+  if (clicks == 4 && pickUp == false && frameCount - lastPutDown > 120) {
     fill('black')
     rect(X_(0), Y_(0), X_(1200, adjust=0), Y_(900))
   }
+
+    // DRAW CURSOR //
+
+    if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && clicks < 4) {
+      cursor(HAND)
+    }
+    else if (Math.abs(mouseX - settingsX) <= (settingsD/2) && Math.abs(mouseY - settingsY) <= (settingsD/2)) {
+      cursor(HAND)
+    }
+    else {
+      cursor(ARROW)
+    }
 }
 
 function drawCandle(candleX,candleTopY,candleBottomY,candleRound,candleHeight,candleWidth) {
@@ -192,18 +208,33 @@ function pickUpIpad(ipadPickWidth,ipadPickHeight){
 
 }
 
-/// PICK UP OR PUT DOWN IPAD ///
+function openSettings(settingsOpen) {
+  if (settingsOpen) {
+    c = color('white')
+    c.setAlpha(120)
+    fill(c)
+    rect(X_(1000), Y_(30), X_(100, adjust=false), Y_(100))
+  }
+}
+
+/// OPENING STUFF WITH CLICKS ///
 
 function mouseClicked(){
-  if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom, pickUp==false) {
+  if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && pickUp==false) {
     pickUp = true
     clicks += 1
   }
-  else {
+  else if (pickUp == true) {
     pickUp = false
     lastPutDown = frameCount
   }
-
+  //fix this
+  else if (Math.abs(mouseX - settingsX) <= (settingsD/2) && Math.abs(mouseY - settingsY) <= (settingsD/2) && settingsOpen == false) {
+    settingsOpen = true
+  }
+  else if (settingsOpen == true){
+    settingsOpen = false
+  }
 }
 
 /// EVENTS ///
@@ -232,11 +263,8 @@ function thePlantsHaveEyes() {
 }
 
 function snuffedOut(){
-  for (let particle of smokeParticles) {
-    particle.update(frameCount - 200)
-    particle.display()
+  // todo thursday
   }
-}
 
 function blackout() {
   c = color('black')
@@ -253,37 +281,6 @@ function boo() {
   
   if (frameCount % 2 == 0) {
     image(jumpscare, X_(0), Y_(0), X_(1200, adjust=false), Y_(900))
-  }
-}
-
-/// OBJECT CLASSES ///
-
-class SmokeParticle {
-  constructor() {
-    this.posX = X_(100);
-    this.posY = Y_(300);
-    this.radius = 5;
-    this.color = color('white');
-    this.color.setAlpha(40);
-    this.lifespan = 200;
-  }
-
-  update() {
-
-    // Different size snowflakes fall at different y speeds
-    let ySpeed = 8 
-    this.posY += ySpeed;
-
-  }
-
-  run() {
-    this.update()
-  }
-
-  display() {
-    fill(this.color);
-    noStroke();
-    circle(this.posX, this.posY, this.radius);
   }
 }
 
