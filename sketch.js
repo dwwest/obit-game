@@ -11,6 +11,8 @@ function preload(){
   gear = loadImage('gear.png')
   pickUp = false
   settingsOpen = false
+  soundOn = false
+  bright_mod = 0
   clicks = 0
 }
 
@@ -20,14 +22,10 @@ function setup() {
 }
 
 function adjust_brightness(bright_mod) {
-  // img.loadPixels();
-  // for (let x = 0; x < img.width; x += 1) {
-  //   for (let y = 0; y < img.height; y += 1) {
-  //     pix = img.get(x, y)
-  //     img.set(x, y, [pix[0]+bright_mod, pix[1]+bright_mod, pix[2]+bright_mod, 255]);
-  //   }
-  // }
-  // img.updatePixels();
+  c = color('white')
+  c.setAlpha(bright_mod)
+  fill(c)
+  rect(0, 0, windowWidth, windowHeight)
 }
 
 function draw() {
@@ -40,10 +38,6 @@ function draw() {
   imageHeight = imageWidth*imAspect;
   
   // DRAW APARTMENT //
-  if (frameCount % 10 == 0) {
-    adjust_brightness(10)
-  }
-
   image(img, X_(0), Y_(0), imageWidth, imageHeight);
 
   // SHADOW ON PHOTO //
@@ -53,13 +47,13 @@ function draw() {
   rect(X_(560), Y_(150), X_(150, adjust=false), Y_(180))
 
   // SETTINGS MENU //
-  settingsX = 1100
-  settingsY = 40
-  settingsD = 40
+  settingsX = X_(1100)
+  settingsY = Y_(40)
+  settingsD = Y_(40)
   c = color('gray')
   c.setAlpha(110)
   fill(c)
-  circle(X_(settingsX), Y_(settingsY), Y_(settingsD))
+  circle(settingsX, settingsY, settingsD)
   // todo: make the gear image dependent on settings xyr
   image(gear, X_(1090), Y_(30), X_(20, adjust=false), Y_(20))
   openSettings(settingsOpen)
@@ -77,6 +71,8 @@ function draw() {
   // IPAD PICKED UP COORDS //
   ipadPickWidth = 500;
   ipadPickHeight = 700;
+
+  adjust_brightness(bright_mod)
 
   // EVENTS //
 
@@ -209,17 +205,37 @@ function pickUpIpad(ipadPickWidth,ipadPickHeight){
 }
 
 function openSettings(settingsOpen) {
+  
   if (settingsOpen) {
     c = color('white')
-    c.setAlpha(120)
+    c.setAlpha(130)
     fill(c)
-    rect(X_(1000), Y_(30), X_(100, adjust=false), Y_(100))
+    rect(X_(975), Y_(15), X_(150, adjust=false), Y_(300), 20)
+    fill(color('black'))
+    text('Sound on', X_(985), Y_(80))
+    text('Brightness adjust', X_(985), Y_(120))
+    fill('white')
+    stroke(color('black'))
+    circle(X_(1060), Y_(78), Y_(20))
+    noStroke()
+    // the filled in dot for sound on
+    stroke(color('black'))
+    strokeWeight(5)
+    line(X_(1050), Y_(150), X_(1050), Y_(280))
+    for (let ii = 0; ii < 6; ii++){
+      line(X_(1040), Y_(150 + (ii*26)), X_(1060), Y_(150 + (ii*26)))
+    }
+    noStroke()
+    fill(color('white'))
+    circle(X_(1050), Y_(280), Y_(10))
   }
 }
 
 /// OPENING STUFF WITH CLICKS ///
 
+
 function mouseClicked(){
+
   if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && pickUp==false) {
     pickUp = true
     clicks += 1
@@ -228,13 +244,33 @@ function mouseClicked(){
     pickUp = false
     lastPutDown = frameCount
   }
-  //fix this
-  else if (Math.abs(mouseX - settingsX) <= (settingsD/2) && Math.abs(mouseY - settingsY) <= (settingsD/2) && settingsOpen == false) {
+  else if (boundingBox(settingsX, settingsY, settingsD, settingsD) && settingsOpen == false) {
     settingsOpen = true
   }
+  // need to change this so it only closes if you click outside the settings
+  // maybe nest these so you can click on the dot, and the slider if settings is open
+  // then close if you click anywhere outside the rectangle
+  // will then need to do this to change the cursor style
+  // maybe refactor and combine these so you don't have the same if statements
+  // in two different places
   else if (settingsOpen == true){
     settingsOpen = false
   }
+}
+
+function printTo(...data){
+  console.log(...data)
+  return(data[0])
+}
+
+// does this return true or false?, use in the conditionals
+// 
+function boundingBox(centerX, centerY, width, height, debug=false) {
+  if (debug==true) {
+    fill(color('red'))
+    rect(centerX - (width/2), centerY - (height/2), width, height)
+  }
+  return(Math.abs(mouseX - centerX) <= width && Math.abs(mouseY - centerY) <= height)
 }
 
 /// EVENTS ///
