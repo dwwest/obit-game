@@ -50,6 +50,14 @@ function draw() {
   settingsX = X_(1100)
   settingsY = Y_(40)
   settingsD = Y_(40)
+  menuX = X_(975)
+  menuY = Y_(15)
+  menuWidth = X_(150, adjust=false)
+  menuHeight = Y_(300)
+  sliderX = X_(1050)
+  sliderY = Y_(150)
+  sliderTicks = 6
+  sliderSpread = 26
   c = color('gray')
   c.setAlpha(110)
   fill(c)
@@ -116,17 +124,80 @@ function draw() {
     rect(X_(0), Y_(0), X_(1200, adjust=0), Y_(900))
   }
 
-    // DRAW CURSOR //
+  // DRAW CURSOR //
 
-    if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && clicks < 4) {
-      cursor(HAND)
+  if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && clicks < 4) {
+    cursor(HAND)
+  }
+  else if (Math.abs(mouseX - settingsX) <= (settingsD/2) && Math.abs(mouseY - settingsY) <= (settingsD/2)) {
+    cursor(HAND)
+  }
+  else {
+    cursor(ARROW)
+  }
+
+}
+
+/// CLICKS ///
+
+function mouseClicked(){
+  // change this to use bounding box
+  if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && pickUp==false) {
+    pickUp = true
+    clicks += 1
+  }
+  else if (pickUp == true) {
+    pickUp = false
+    lastPutDown = frameCount
+  }
+  else if (boundingBox(settingsX, settingsY, settingsD, settingsD) && settingsOpen == false) {
+    settingsOpen = true
+  }
+  else if (boundingBox(menuX + menuWidth/2, menuY + menuHeight/2, menuWidth, menuHeight) == false && settingsOpen == true){
+    settingsOpen = false
+  }
+  else if (boundingBox(sliderX, sliderY + Y_(sliderSpread*(sliderTicks-1))/2, X_(10, adjust=false), Y_(sliderSpread*(sliderTicks-1))) && settingsOpen == true){
+    bright_mod = (mouseY - sliderY)
+  }
+}
+
+// DEFINES BOUNDING BOX FOR CLICKS //
+
+function boundingBox(centerX, centerY, width, height, debug=false) {
+  if (debug==true) {
+    fill(color('red'))
+    rect(centerX - (width/2), centerY - (height/2), width, height)
+  }
+  return(Math.abs(mouseX - centerX) <= width/2 && Math.abs(mouseY - centerY) <= height/2)
+}
+
+// OBJECTS TO DRAW // 
+
+function openSettings(settingsOpen) {
+  
+  if (settingsOpen) {
+    c = color('white')
+    c.setAlpha(130)
+    fill(c)
+    rect(menuX, menuY, menuWidth, menuHeight, 20)
+    fill(color('black'))
+    text('Sound on', X_(985), Y_(80))
+    text('Brightness adjust', X_(985), Y_(120))
+    fill('white')
+    stroke(color('black'))
+    circle(X_(1060), Y_(78), Y_(20))
+    noStroke()
+    // the filled in dot for sound on
+    stroke(color('black'))
+    strokeWeight(5)
+    line(sliderX, Y_(150), X_(1050), Y_(280))
+    for (let ii = 0; ii < sliderTicks; ii++){
+      line(sliderX + X_(10, adjust=false), sliderY + Y_(ii*sliderSpread), sliderX - X_(10, adjust=false), sliderY + Y_(ii*sliderSpread))
     }
-    else if (Math.abs(mouseX - settingsX) <= (settingsD/2) && Math.abs(mouseY - settingsY) <= (settingsD/2)) {
-      cursor(HAND)
-    }
-    else {
-      cursor(ARROW)
-    }
+    noStroke()
+    fill(color('white'))
+    circle(sliderX, sliderY + bright_mod, Y_(10))
+  }
 }
 
 function drawCandle(candleX,candleTopY,candleBottomY,candleRound,candleHeight,candleWidth) {
@@ -204,75 +275,6 @@ function pickUpIpad(ipadPickWidth,ipadPickHeight){
 
 }
 
-function openSettings(settingsOpen) {
-  
-  if (settingsOpen) {
-    c = color('white')
-    c.setAlpha(130)
-    fill(c)
-    rect(X_(975), Y_(15), X_(150, adjust=false), Y_(300), 20)
-    fill(color('black'))
-    text('Sound on', X_(985), Y_(80))
-    text('Brightness adjust', X_(985), Y_(120))
-    fill('white')
-    stroke(color('black'))
-    circle(X_(1060), Y_(78), Y_(20))
-    noStroke()
-    // the filled in dot for sound on
-    stroke(color('black'))
-    strokeWeight(5)
-    line(X_(1050), Y_(150), X_(1050), Y_(280))
-    for (let ii = 0; ii < 6; ii++){
-      line(X_(1040), Y_(150 + (ii*26)), X_(1060), Y_(150 + (ii*26)))
-    }
-    noStroke()
-    fill(color('white'))
-    circle(X_(1050), Y_(280), Y_(10))
-  }
-}
-
-/// OPENING STUFF WITH CLICKS ///
-
-
-function mouseClicked(){
-
-  if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && pickUp==false) {
-    pickUp = true
-    clicks += 1
-  }
-  else if (pickUp == true) {
-    pickUp = false
-    lastPutDown = frameCount
-  }
-  else if (boundingBox(settingsX, settingsY, settingsD, settingsD) && settingsOpen == false) {
-    settingsOpen = true
-  }
-  // need to change this so it only closes if you click outside the settings
-  // maybe nest these so you can click on the dot, and the slider if settings is open
-  // then close if you click anywhere outside the rectangle
-  // will then need to do this to change the cursor style
-  // maybe refactor and combine these so you don't have the same if statements
-  // in two different places
-  else if (settingsOpen == true){
-    settingsOpen = false
-  }
-}
-
-function printTo(...data){
-  console.log(...data)
-  return(data[0])
-}
-
-// does this return true or false?, use in the conditionals
-// 
-function boundingBox(centerX, centerY, width, height, debug=false) {
-  if (debug==true) {
-    fill(color('red'))
-    rect(centerX - (width/2), centerY - (height/2), width, height)
-  }
-  return(Math.abs(mouseX - centerX) <= width && Math.abs(mouseY - centerY) <= height)
-}
-
 /// EVENTS ///
 
 function ipadFlicker(ipadXBounds, ipadYBounds, off=true) {
@@ -340,4 +342,11 @@ function Y_(input, coordHeight=900) {
   // and coordHeight is the number input by the user for the 
   // coordinate system
   return input/coordHeight * imageHeight
+}
+
+// DEBUGGING //
+
+function printTo(...data){
+  console.log(...data)
+  return(data[0])
 }
