@@ -6,7 +6,6 @@
 
 function preload(){
   img = loadImage('apartment.png')
-  face = loadImage('scary_face_cropped.jpg')
   jumpscare = loadImage('scary_face.jpg')
   gear = loadImage('gear.png')
   pickUp = false
@@ -14,6 +13,7 @@ function preload(){
   soundOn = false
   bright_mod = 0
   clicks = 0
+  frameSnuffed = false
 }
 
 function setup() {
@@ -80,12 +80,10 @@ function draw() {
   ipadPickWidth = 500;
   ipadPickHeight = 700;
 
-  adjust_brightness(bright_mod)
-
   // EVENTS //
 
   if (clicks >= 2) {
-    skullFlash()
+    // skullFlash()
   }
 
   drawCandle(candleX,candleTopY,candleBottomY,candleRound,candleHeight,candleWidth)
@@ -93,7 +91,7 @@ function draw() {
     drawFlame(candleX,candleTopY)
   }
   else {
-    // snuffedOut()
+    snuffedOut()
   }
   
   if (clicks >= 4 && frameCount - lastPutDown > 100) {
@@ -123,6 +121,8 @@ function draw() {
     fill('black')
     rect(X_(0), Y_(0), X_(1200, adjust=0), Y_(900))
   }
+
+  adjust_brightness(bright_mod)
 
   // DRAW CURSOR //
 
@@ -301,7 +301,26 @@ function thePlantsHaveEyes() {
 }
 
 function snuffedOut(){
-  // todo thursday
+  if (frameSnuffed == false){
+    frameSnuffed = frameCount
+  }
+
+  if ((frameCount - frameSnuffed) % 10 == 0 || frameCount == frameSnuffed) {
+    print('here')
+    pts = []
+    for (let i = 0; i < 4; i++){
+      pts.push(X_(random(-7,7), adjust=false))
+    }
+  }
+
+  c = color('white')
+  c.setAlpha(40 + frameSnuffed - (frameCount/3))
+  fill(c)
+  beginShape()
+  vertex(X_(450), Y_(510))
+  bezierVertex(X_(440) + pts[1], Y_(480), X_(460) + pts[2], Y_(450), X_(450), Y_(413))
+  bezierVertex(X_(460) + pts[3], Y_(380), X_(440) + pts[4], Y_(340), X_(450), Y_(200))
+  endShape()
   }
 
 function blackout() {
