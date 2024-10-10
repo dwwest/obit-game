@@ -5,17 +5,18 @@
 // code will adjust to pixel accordingly
 
 function preload(){
-  img = loadImage('apartment.png')
-  jumpscare = loadImage('scary_face.jpg')
-  gear = loadImage('gear.png')
-  backArrow = loadImage('back_button.jpg')
+  img = loadImage('assets/apartment.png')
+  jumpscare = loadImage('assets/scary_face.jpg')
+  gear = loadImage('assets/gear.png')
+  backArrow = loadImage('assets/back_button.jpg')
   pickUp = false
   settingsOpen = false
   soundOn = false
   bright_mod = 0
   clicks = 0
   frameSnuffed = false
-  emailOpen = 0
+  emailOpen = 2
+  inboxOrDrafts = 0
 }
 
 function setup() {
@@ -96,9 +97,9 @@ function draw() {
     snuffedOut()
   }
   
-  if (clicks >= 4 && frameCount - lastPutDown > 100) {
-    blackout()
-  }
+  // if (clicks >= 4 && frameCount - lastPutDown > 100) {
+  //   blackout()
+  // }
 
   if (frameCount < 100 || pickUp == true){
     ipadFlicker(ipadXBounds, ipadYBounds)
@@ -115,14 +116,14 @@ function draw() {
     pickUpIpad(ipadPickWidth, ipadPickHeight)
   }
 
-  if (clicks == 4 && pickUp == false && frameCount - lastPutDown > 100 && frameCount - lastPutDown < 110) {
-    boo()
-  }
+  // if (clicks == 4 && pickUp == false && frameCount - lastPutDown > 100 && frameCount - lastPutDown < 110) {
+  //   boo()
+  // }
 
-  if (clicks == 4 && pickUp == false && frameCount - lastPutDown > 120) {
-    fill('black')
-    rect(X_(0), Y_(0), X_(1200, adjust=0), Y_(900))
-  }
+  // if (clicks == 4 && pickUp == false && frameCount - lastPutDown > 120) {
+  //   fill('black')
+  //   rect(X_(0), Y_(0), X_(1200, adjust=0), Y_(900))
+  // }
 
   adjust_brightness(bright_mod)
 
@@ -275,7 +276,6 @@ function pickUpIpad(ipadPickWidth,ipadPickHeight){
 
   emailScreen(ipadPickWidth, ipadPickHeight)
 
-
 }
 
 function emailScreen(ipadPickWidth, ipadPickHeight){
@@ -303,10 +303,35 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
     text('Drafts', ipadCornerX + X_(150, adjust=false), ipadCornerY + Y_(85))
     textStyle(NORMAL)
 
-    fill(255)
-    stroke(0)
-    rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
-    noStroke()
+    if (inboxOrDrafts == 0) {
+      fill(255)
+      stroke(0)
+      rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
+      rect(X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(345,adjust=false), Y_(70))
+      noStroke()
+      noStroke()
+      fill(0)
+      textStyle(BOLD)
+      text("obituary", ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(140))
+      text('To: Jacob Dobry  |  From: us  ', ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(155))
+      text("sent today at 11:24pm", ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(170))
+      textStyle(NORMAL)
+    }
+
+    if (inboxOrDrafts == 1) {
+      fill(255)
+      stroke(0)
+      rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
+      rect(X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(345,adjust=false), Y_(70))
+      noStroke()
+      noStroke()
+      fill(0)
+      textStyle(BOLD)
+      text("please read", ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(140))
+      text('To: Amanda Dobry', ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(155))
+      text("last opened: August 30, 2024", ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(170))
+      textStyle(NORMAL)
+    }
 
   }
 
@@ -345,6 +370,28 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
       fill(0)
       text(obitList[3], X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
     }
+  }
+
+  if (emailOpen == 2) {
+    stroke(0)
+    fill(255)
+    rect(ipadCornerX + X_(50, adjust=false), ipadCornerY + Y_(80), X_(20, adjust=false), Y_(20))
+    image(backArrow, ipadCornerX + X_(50, adjust=false), ipadCornerY + Y_(80), X_(20, adjust=false), Y_(20))
+    noStroke()
+    fill(0)
+    textStyle(BOLD)
+    text('To: Amanda Dobry | From: Jacob Dobry | please read (draft)', ipadCornerX + X_(80, adjust=false), ipadCornerY + Y_(100))
+    textStyle(NORMAL)
+
+    fill(255)
+    stroke(0)
+    rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
+    noStroke()
+    fill(0)
+    text("Hi sweetie,", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
+    text("Sorry, you probably don't want to ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(280), X_(350,adjust=false), Y_(570))
+    text("I know you're mad ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(310), X_(350,adjust=false), Y_(570))
+    text("[need to say to check pic frame] ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(340), X_(350,adjust=false), Y_(570))
   }
 
 }
