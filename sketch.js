@@ -8,12 +8,14 @@ function preload(){
   img = loadImage('apartment.png')
   jumpscare = loadImage('scary_face.jpg')
   gear = loadImage('gear.png')
+  backArrow = loadImage('back_button.jpg')
   pickUp = false
   settingsOpen = false
   soundOn = false
   bright_mod = 0
   clicks = 0
   frameSnuffed = false
+  emailOpen = 0
 }
 
 function setup() {
@@ -44,7 +46,7 @@ function draw() {
   c = color('black')
   c.setAlpha(140)
   fill(c)
-  rect(X_(560), Y_(150), X_(150, adjust=false), Y_(180))
+  rect(X_(560), Y_(140), X_(150, adjust=false), Y_(180))
 
   // SETTINGS MENU //
   settingsX = X_(1100)
@@ -126,7 +128,7 @@ function draw() {
 
   // DRAW CURSOR //
 
-  if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && clicks < 4) {
+  if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && clicks < 4 && pickUp == false) {
     cursor(HAND)
   }
   else if (Math.abs(mouseX - settingsX) <= (settingsD/2) && Math.abs(mouseY - settingsY) <= (settingsD/2)) {
@@ -159,6 +161,7 @@ function mouseClicked(){
   else if (boundingBox(sliderX, sliderY + Y_(sliderSpread*(sliderTicks-1))/2, X_(10, adjust=false), Y_(sliderSpread*(sliderTicks-1))) && settingsOpen == true){
     bright_mod = (mouseY - sliderY)
   }
+
 }
 
 // DEFINES BOUNDING BOX FOR CLICKS //
@@ -194,6 +197,7 @@ function openSettings(settingsOpen) {
     for (let ii = 0; ii < sliderTicks; ii++){
       line(sliderX + X_(10, adjust=false), sliderY + Y_(ii*sliderSpread), sliderX - X_(10, adjust=false), sliderY + Y_(ii*sliderSpread))
     }
+    strokeWeight(1)
     noStroke()
     fill(color('white'))
     circle(sliderX, sliderY + bright_mod, Y_(10))
@@ -251,26 +255,96 @@ function drawFlame(candleX,candleTopY,flameSize=1) {
 
 function pickUpIpad(ipadPickWidth,ipadPickHeight){
   fill(100)
-  rect(X_(imageWidth/2 - ipadPickWidth/2), Y_(100), ipadPickWidth, ipadPickHeight)
+  rect(X_(imageWidth/2 - ipadPickWidth/2), Y_(100), ipadPickWidth, ipadPickHeight, 10, 10)
   let c = color('#99FFFF')
-  c.setAlpha(100)
+  c.setAlpha(40)
   fill(c)
   rect(0,0,windowWidth,windowHeight)
   fill(255)
-  rect(X_(imageWidth/2 - ipadPickWidth*.9/2), Y_(100+(ipadPickHeight*.1/2)), ipadPickWidth*.9, ipadPickHeight*.9)
+  ipadCornerX = X_(imageWidth/2 - ipadPickWidth*.9/2)
+  ipadCornerY = Y_(100+(ipadPickHeight*.1/2))
+  rect(ipadCornerX, ipadCornerY, ipadPickWidth*.9, ipadPickHeight*.9)
 
-  let obit1 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 31rd, 2024.  Those who gathered report he died with a smile on his face. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his loving wife of 24 years, Mallory Dobry neé Nesbitt, and his daughter, Amanda Dobry. In the five years before his death, he devoted himself to the Church of the Mind, becoming a pillar of the spiritual community.  Those who knew Jacob described him as happy and hardworking.  He will be greatly missed. A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm in the same old church he and his wife were married."
-  let obit2 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 31rd, 2024.  Those who gathered report he died with a smile on his face, though you doubt their word. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his loving wife of 24 years, Mallory Dobry neé Nesbitt, and you, his daughter.  In the five years before his death, he devoted himself to the Church of the Mind, becoming a pillar of the spiritual community.  You didn't know he'd joined the Church of the Mind for many years.  Not until it was too late.  Those who knew Jacob described him as happy and hardworking.  Your own mother called him bottled up.  Her mother called him, 'just a man, what did you expect?' You called him unstable.  He called you a worry wart. A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm in the same church he and your mother were married in."
-  let obit3 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 3rd, 2024.  Those who gathered report he died with a smile on his face, though you doubt their word. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his estranged wife, Mallory Dolbry and he is survived by you, his ever-hating daughter. He told you he joined the church at Christmas.  He told you he planned to give Us his mind over mashed potatoes and dry turkey.  He had to explain it to you, to describe the incredible meetings he’d been to, the process of cranial insertion.  He tried to describe the beautiful void of connection and love shared without walls, but you wouldn’t listen. Mallory called you selfish.  Jacob called you nothing at all.  By then he was no longer just himself. You see Us as grotesque.  Unnatural.  As though you yourself are not composed of four billion odd neurons.  Where do you end and your pieces begin? A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm."
-  let obit4 = "We will be there. We’ve been waiting for you."
-  obitList = [obit1, obit2, obit3, obit4]
+  // ipad top strip icons
+  fill(50)
+  rect(ipadCornerX + X_(10, adjust=false), ipadCornerY + Y_(20), X_(5, adjust=false), Y_(10))
+  rect(ipadCornerX + X_(20, adjust=false), ipadCornerY + Y_(15), X_(5, adjust=false), Y_(15))
+  rect(ipadCornerX + X_(30, adjust=false), ipadCornerY + Y_(10), X_(5, adjust=false), Y_(20))
+  text('11:24 pm', ipadCornerX + (ipadPickWidth/2) - X_(45, adjust=false), ipadCornerY + Y_(30))
+  text('32%', ipadCornerX + (ipadPickWidth) - X_(90, adjust=false), ipadCornerY + Y_(30))
 
-  fill(0)
-  if (clicks < 5) {
-    text(obitList[clicks-1], X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(195), X_(350,adjust=false), Y_(570))
+  emailScreen(ipadPickWidth, ipadPickHeight)
+
+
+}
+
+function emailScreen(ipadPickWidth, ipadPickHeight){
+
+  // controlled by game state object emailOpen, which can be set to 0 (the
+  // main page), 1 (the obit email), or 2 (the email from the dad to the girl)
+  if (emailOpen == 0) {
+    stroke(0)
+    fill(255)
+    rect(ipadCornerX + X_(45, adjust=false), ipadCornerY + Y_(60), X_(80, adjust=false), Y_(40))
+    noStroke()
+
+    fill(0)
+    textStyle(BOLD)
+    text('Inbox', ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(85))
+    textStyle(NORMAL)
+
+    stroke(0)
+    fill(255)
+    rect(ipadCornerX + X_(130, adjust=false), ipadCornerY + Y_(60), X_(80, adjust=false), Y_(40))
+    noStroke()
+
+    fill(0)
+    textStyle(BOLD)
+    text('Drafts', ipadCornerX + X_(150, adjust=false), ipadCornerY + Y_(85))
+    textStyle(NORMAL)
+
+    fill(255)
+    stroke(0)
+    rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
+    noStroke()
+
   }
-  else {
-    text(obitList[3], X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(195), X_(350,adjust=false), Y_(570))
+
+
+  if (emailOpen == 1) {
+    stroke(0)
+    fill(255)
+    rect(ipadCornerX + X_(50, adjust=false), ipadCornerY + Y_(80), X_(20, adjust=false), Y_(20))
+    image(backArrow, ipadCornerX + X_(50, adjust=false), ipadCornerY + Y_(80), X_(20, adjust=false), Y_(20))
+    noStroke()
+    fill(0)
+    textStyle(BOLD)
+    text('To: Jacob Dobry  |  From: us  |  obituary  sent today at 11:24pm', ipadCornerX + X_(80, adjust=false), ipadCornerY + Y_(100))
+    textStyle(NORMAL)
+
+    let obit1 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 31rd, 2024.  Those who gathered report he died with a smile on his face. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his loving wife of 24 years, Mallory Dobry neé Nesbitt, and his daughter, Amanda Dobry. In the five years before his death, he devoted himself to the Church of the Mind, becoming a pillar of the spiritual community.  Those who knew Jacob described him as happy and hardworking.  He will be greatly missed. A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm in the same old church he and his wife were married."
+    let obit2 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 31rd, 2024.  Those who gathered report he died with a smile on his face, though you doubt their word. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his loving wife of 24 years, Mallory Dobry neé Nesbitt, and you, his daughter.  In the five years before his death, he devoted himself to the Church of the Mind, becoming a pillar of the spiritual community.  You didn't know he'd joined the Church of the Mind for many years.  Not until it was too late.  Those who knew Jacob described him as happy and hardworking.  Your own mother called him bottled up.  Her mother called him, 'just a man, what did you expect?' You called him unstable.  He called you a worry wart. A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm in the same church he and your mother were married in."
+    let obit3 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 3rd, 2024.  Those who gathered report he died with a smile on his face, though you doubt their word. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his estranged wife, Mallory Dolbry and he is survived by you, his ever-hating daughter. He told you he joined the church at Christmas.  He told you he planned to give Us his mind over mashed potatoes and dry turkey.  He had to explain it to you, to describe the incredible meetings he’d been to, the process of cranial insertion.  He tried to describe the beautiful void of connection and love shared without walls, but you wouldn’t listen. Mallory called you selfish.  Jacob called you nothing at all.  By then he was no longer just himself. You see Us as grotesque.  Unnatural.  As though you yourself are not composed of four billion odd neurons.  Where do you end and your pieces begin? A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm."
+    let obit4 = "We will be there. We’ve been waiting for you."
+    obitList = [obit1, obit2, obit3, obit4]
+
+    fill(0)
+    if (clicks < 5) {
+      fill(255)
+      stroke(0)
+      rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
+      noStroke()
+      fill(0)
+      text(obitList[clicks-1], X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
+    }
+    else {
+      fill(255)
+      stroke(0)
+      rect(X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
+      noStroke()
+      fill(0)
+      text(obitList[3], X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
+    }
   }
 
 }
@@ -306,7 +380,6 @@ function snuffedOut(){
   }
 
   if ((frameCount - frameSnuffed) % 10 == 0 || frameCount == frameSnuffed) {
-    print('here')
     pts = []
     for (let i = 0; i < 4; i++){
       pts.push(X_(random(-7,7), adjust=false))
@@ -314,7 +387,7 @@ function snuffedOut(){
   }
 
   c = color('white')
-  c.setAlpha(40 + frameSnuffed - (frameCount/3))
+  c.setAlpha(80 + (frameSnuffed - frameCount)/10)
   fill(c)
   beginShape()
   vertex(X_(450), Y_(510))
