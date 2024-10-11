@@ -74,14 +74,19 @@ function draw() {
   candleWidth = X_(25,adjust=false); candleHeight = Y_(15);
 
   // IPAD COORDS //
-  ipadXLeft = X_(590); ipadXRight =  X_(650); ipadYTop = Y_(540);
-  ipadYBottom = Y_(570);
-  let ipadXBounds = [ipadXLeft, ipadXRight]
-  let ipadYBounds = [ipadYTop, ipadYBottom]
+  ipadX = X_(590); ipadWidth =  X_(60, adjust=false); ipadY = Y_(540);
+  ipadHeight = Y_(30);
 
   // IPAD PICKED UP COORDS //
   ipadPickWidth = 500;
   ipadPickHeight = 700;
+
+  // IPAD BUTTON COORDS //
+  ipadCornerX = X_(imageWidth/2 - ipadPickWidth*.9/2);
+  ipadCornerY = Y_(100+(ipadPickHeight*.1/2));
+  backButtonX = ipadCornerX + X_(50, adjust=false); 
+  backButtonY = ipadCornerY + Y_(80); backButtonWidth = X_(20, adjust=false); 
+  backButtonHeight = Y_(20);
 
   // EVENTS //
 
@@ -102,10 +107,10 @@ function draw() {
   // }
 
   if (frameCount < 100 || pickUp == true){
-    ipadFlicker(ipadXBounds, ipadYBounds)
+    ipadFlicker(ipadX, ipadY, ipadWidth, ipadHeight)
   }
   else {
-    ipadFlicker(ipadXBounds, ipadYBounds, false)
+    ipadFlicker(ipadX, ipadY, ipadWidth, ipadHeight, false)
   }
 
   if (clicks == 3 && frameCount - lastPutDown < 10) {
@@ -129,10 +134,10 @@ function draw() {
 
   // DRAW CURSOR //
 
-  if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && clicks < 4 && pickUp == false) {
+  if (boundingBox(ipadX + ipadWidth/2, ipadY + ipadHeight/2, ipadWidth, ipadHeight) && clicks < 4 && pickUp == false) {
     cursor(HAND)
   }
-  else if (Math.abs(mouseX - settingsX) <= (settingsD/2) && Math.abs(mouseY - settingsY) <= (settingsD/2)) {
+  else if (boundingBox(settingsX, settingsY, settingsD, settingsD)) {
     cursor(HAND)
   }
   else {
@@ -144,24 +149,40 @@ function draw() {
 /// CLICKS ///
 
 function mouseClicked(){
-  // change this to use bounding box
-  if (mouseX > ipadXLeft && mouseX < ipadXRight && mouseY > ipadYTop && mouseY < ipadYBottom && pickUp==false) {
+  // Pick up iPad
+  if (boundingBox(ipadX + ipadWidth/2, ipadY + ipadHeight/2, ipadWidth, ipadHeight) && pickUp==false) {
     pickUp = true
     clicks += 1
   }
-  else if (pickUp == true) {
+  // Put down the iPad
+  else if (boundingBox(ipadCornerX + ipadPickWidth/2, ipadCornerY + ipadPickHeight/2, ipadPickWidth, ipadPickHeight) == false && pickUp == true) {
     pickUp = false
     lastPutDown = frameCount
   }
+  // Open settings by clicking wheel
   else if (boundingBox(settingsX, settingsY, settingsD, settingsD) && settingsOpen == false) {
     settingsOpen = true
   }
+  // Close settings by clicking outside
   else if (boundingBox(menuX + menuWidth/2, menuY + menuHeight/2, menuWidth, menuHeight) == false && settingsOpen == true){
     settingsOpen = false
   }
+  // Brightness slider
   else if (boundingBox(sliderX, sliderY + Y_(sliderSpread*(sliderTicks-1))/2, X_(10, adjust=false), Y_(sliderSpread*(sliderTicks-1))) && settingsOpen == true){
     bright_mod = (mouseY - sliderY)
   }
+
+  // Back button in email
+  else if (boundingBox(backButtonX + backButtonWidth/2, backButtonY + backButtonHeight/2, backButtonWidth, backButtonHeight) && pickUp == true && (emailOpen == 1 || emailOpen == 2)){
+    emailOpen = 0
+  }
+  // Inbox from drafts
+  else if (boundingBox()){
+  }
+  // Drafts from inbox
+  else if (boundingBox()){
+  }
+  // Open one of the emails
 
 }
 
@@ -213,31 +234,29 @@ function drawCandle(candleX,candleTopY,candleBottomY,candleRound,candleHeight,ca
   ellipse(candleX,candleBottomY,candleWidth,candleRound)
 }
 
-function iSawTheIpadGlow(ipadXBounds, ipadYBounds) {
+function iSawTheIpadGlow(ipadX, ipadY, ipadWidth) {
   let c = color('#99FFFF')
   c.setAlpha(30)
   fill(c)
   noStroke()
   // COORDS  
-  ipadY = ipadYBounds[0]; ipadX1 = ipadXBounds[0]; ipadX2 = ipadXBounds[1];
-  ipadX3 = X_(730); ipadX4 = X_(490)
   beginShape()
-  vertex(ipadX1, ipadY)
-  vertex(ipadX2, ipadY)
-  vertex(ipadX3, 0)
-  vertex(ipadX4, 0)
+  vertex(ipadX, ipadY)
+  vertex(ipadX + ipadWidth, ipadY)
+  vertex(X_(730), 0)
+  vertex(X_(490), 0)
   endShape(CLOSE)
 }
 
-function ipadDark(ipadXBounds, ipadYBounds){
+function ipadDark(ipadX, ipadY, ipadWidth, ipadHeight){
   let c = color('black')
   c.setAlpha(200)
   fill(c)
   beginShape()
-  vertex(ipadXBounds[0], ipadYBounds[0])
-  vertex(ipadXBounds[0] - X_(12,adjust=false), ipadYBounds[1])
-  vertex(ipadXBounds[1] + X_(8,adjust=false), ipadYBounds[1])
-  vertex(ipadXBounds[1], ipadYBounds[0])
+  vertex(ipadX, ipadY)
+  vertex(ipadX - X_(12,adjust=false), ipadY + ipadHeight)
+  vertex(ipadX + ipadWidth + X_(8,adjust=false), ipadY + ipadHeight)
+  vertex(ipadX + ipadWidth, ipadY)
   endShape(CLOSE)
 }
 
@@ -262,8 +281,6 @@ function pickUpIpad(ipadPickWidth,ipadPickHeight){
   fill(c)
   rect(0,0,windowWidth,windowHeight)
   fill(255)
-  ipadCornerX = X_(imageWidth/2 - ipadPickWidth*.9/2)
-  ipadCornerY = Y_(100+(ipadPickHeight*.1/2))
   rect(ipadCornerX, ipadCornerY, ipadPickWidth*.9, ipadPickHeight*.9)
 
   // ipad top strip icons
@@ -309,7 +326,6 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
       rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
       rect(X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(345,adjust=false), Y_(70))
       noStroke()
-      noStroke()
       fill(0)
       textStyle(BOLD)
       text("obituary", ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(140))
@@ -323,7 +339,6 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
       stroke(0)
       rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
       rect(X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(345,adjust=false), Y_(70))
-      noStroke()
       noStroke()
       fill(0)
       textStyle(BOLD)
@@ -339,8 +354,8 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
   if (emailOpen == 1) {
     stroke(0)
     fill(255)
-    rect(ipadCornerX + X_(50, adjust=false), ipadCornerY + Y_(80), X_(20, adjust=false), Y_(20))
-    image(backArrow, ipadCornerX + X_(50, adjust=false), ipadCornerY + Y_(80), X_(20, adjust=false), Y_(20))
+    rect(backArrow, backButtonX, backButtonY, backButtonWidth, back_buttonHeight)
+    image(backArrow, backButtonX, backButtonY, backButtonWidth, back_buttonHeight)
     noStroke()
     fill(0)
     textStyle(BOLD)
@@ -357,7 +372,7 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
     if (clicks < 5) {
       fill(255)
       stroke(0)
-      rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
+      rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 - 5), X_(355,adjust=false), Y_(450))
       noStroke()
       fill(0)
       text(obitList[clicks-1], X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
@@ -375,8 +390,8 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
   if (emailOpen == 2) {
     stroke(0)
     fill(255)
-    rect(ipadCornerX + X_(50, adjust=false), ipadCornerY + Y_(80), X_(20, adjust=false), Y_(20))
-    image(backArrow, ipadCornerX + X_(50, adjust=false), ipadCornerY + Y_(80), X_(20, adjust=false), Y_(20))
+    rect(backButtonX, backButtonY, backButtonWidth, backButtonHeight)
+    image(backArrow, backButtonX, backButtonY, backButtonWidth, backButtonHeight)
     noStroke()
     fill(0)
     textStyle(BOLD)
@@ -398,12 +413,12 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
 
 /// EVENTS ///
 
-function ipadFlicker(ipadXBounds, ipadYBounds, off=true) {
+function ipadFlicker(ipadX, ipadY, ipadWidth, ipadHeight, off=true) {
   if (off) {
-    ipadDark(ipadXBounds, ipadYBounds)
+    ipadDark(ipadX, ipadY, ipadWidth, ipadHeight)
   }
   else {
-    iSawTheIpadGlow(ipadXBounds, ipadYBounds)
+    iSawTheIpadGlow(ipadX, ipadY, ipadWidth)
   }
 }
 
