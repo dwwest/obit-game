@@ -9,26 +9,46 @@ function preload(){
   jumpscare = loadImage('assets/scary_face.jpg')
   gear = loadImage('assets/gear.png')
   backArrow = loadImage('assets/back_button.jpg')
-  pickUp = false
-  settingsOpen = false
-  soundOn = false
-  bright_mod = 0
-  clicks = 0
-  frameSnuffed = false
-  emailOpen = 2
-  inboxOrDrafts = 0
+  gameState = new GameState()
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  lastPutDown = 0;
-}
 
-function adjust_brightness(bright_mod) {
-  c = color('white')
-  c.setAlpha(bright_mod)
-  fill(c)
-  rect(0, 0, windowWidth, windowHeight)
+  // PHOTO SHADOW //
+  photo_shadow = new Rect(560, 140, 150, 180, 'black', 140);
+
+  // SETTINGS ICON OBJECTS //
+  settings_circle = new Circle(1100, 40, 40, 'gray', alpha=140)
+  settings_gear = new Img(1090, 30, 20, 20, gear)
+  settings_icon = new CompoundObject([settings_circle, settings_gear], 0)
+  
+  // SETTINGS MENU OBJECTS //
+  menu_box = new Rect(975, 15, 150, 300, 'white', 130, 20)
+  sound_text = new Text(985, 80, 'black', 255, 'Sound on')
+  bright_text = new Text(985, 120, 'black', 255, 'Brightness adjust')
+  sound_clicker = new Circle(1060, 78, 20, 'black', 255, 1, 255)
+  sliderX = 1050; sliderY = 150; sliderTicks = 6; sliderSpread = 26
+  slider = new Rect(1050, 150, 5, 280, 'black', 255, 10)
+  ticks = []
+  for (let ii = 0; ii < sliderTicks; ii++){
+    ticks.push(new Rect(sliderX + 10, sliderY + ii*sliderSpread, sliderX - 10, sliderY + ii*sliderSpread))
+  }
+  bright_indicator = new Circle(sliderX, sliderY + gameState.bright_mod, Y_(10))
+  settings_menu = new CompoundObject([menu_box, sound_text, bright_text, sound_clicker, slider, bright_indicator], 0)
+
+  // CANDLE //
+  candle_color = '#330000'
+  candleX = 451; candleTopY = 510; candleBottomY = 525; candleRound = 8;
+  candleWidth = 25; candleHeight = 15;
+
+  candle_bottom = new Ellipse(candleX, candleBottomY, candleWidth, candleRound, candle_color)
+  candle_side = new Rect(candleX - candleWidth/2, candleTopY, candleWidth, candleHeight, candle_color)
+  candle_top = new Ellipse(candleX, candleTopY, candleWidth, candleRound, candle_color)
+  candle = new CompoundObject([candle_bottom, candle_side, candle_top])
+
+  // FLAME //
+
 }
 
 function draw() {
@@ -44,34 +64,13 @@ function draw() {
   image(img, X_(0), Y_(0), imageWidth, imageHeight);
 
   // SHADOW ON PHOTO //
-  c = color('black')
-  c.setAlpha(140)
-  fill(c)
-  rect(X_(560), Y_(140), X_(150, adjust=false), Y_(180))
+  photo_shadow.display()
+
+  // CANDLE BODY //
+  candle.display()
 
   // SETTINGS MENU //
-  settingsX = X_(1100)
-  settingsY = Y_(40)
-  settingsD = Y_(40)
-  menuX = X_(975)
-  menuY = Y_(15)
-  menuWidth = X_(150, adjust=false)
-  menuHeight = Y_(300)
-  sliderX = X_(1050)
-  sliderY = Y_(150)
-  sliderTicks = 6
-  sliderSpread = 26
-  c = color('gray')
-  c.setAlpha(110)
-  fill(c)
-  circle(settingsX, settingsY, settingsD)
-  // todo: make the gear image dependent on settings xyr
-  image(gear, X_(1090), Y_(30), X_(20, adjust=false), Y_(20))
-  openSettings(settingsOpen)
-  
-  // CANDLE COORDS //
-  candleX = X_(451); candleTopY = Y_(510); candleBottomY = Y_(525); candleRound = Y_(8);
-  candleWidth = X_(25,adjust=false); candleHeight = Y_(15);
+  settings_icon.display()
 
   // IPAD COORDS //
   ipadX = X_(590); ipadWidth =  X_(60, adjust=false); ipadY = Y_(540);
@@ -90,12 +89,10 @@ function draw() {
 
   // EVENTS //
 
-  if (clicks >= 2) {
-    // skullFlash()
-  }
+  settings_menu.display()
 
-  drawCandle(candleX,candleTopY,candleBottomY,candleRound,candleHeight,candleWidth)
-  if (clicks < 1) {
+  
+  if (gameState.clicks < 1) {
     drawFlame(candleX,candleTopY)
   }
   else {
@@ -106,18 +103,18 @@ function draw() {
   //   blackout()
   // }
 
-  if (frameCount < 100 || pickUp == true){
+  if (frameCount < 100 || gameState.pickUp == true){
     ipadFlicker(ipadX, ipadY, ipadWidth, ipadHeight)
   }
   else {
     ipadFlicker(ipadX, ipadY, ipadWidth, ipadHeight, false)
   }
 
-  if (clicks == 3 && frameCount - lastPutDown < 10) {
+  if (gameState.clicks == 3 && frameCount - gameState.lastPutDown < 10) {
     thePlantsHaveEyes()
   }
 
-  if (pickUp == true) {
+  if (gameState.pickUp == true) {
     pickUpIpad(ipadPickWidth, ipadPickHeight)
   }
 
@@ -130,14 +127,14 @@ function draw() {
   //   rect(X_(0), Y_(0), X_(1200, adjust=0), Y_(900))
   // }
 
-  adjust_brightness(bright_mod)
+  adjust_brightness(gameState.bright_mod)
 
   // DRAW CURSOR //
 
   if (boundingBox(ipadX + ipadWidth/2, ipadY + ipadHeight/2, ipadWidth, ipadHeight) && clicks < 4 && pickUp == false) {
     cursor(HAND)
   }
-  else if (boundingBox(settingsX, settingsY, settingsD, settingsD)) {
+  else if (settings_icon.boundingBox()) {
     cursor(HAND)
   }
   else {
@@ -155,16 +152,16 @@ function mouseClicked(){
     clicks += 1
   }
   // Put down the iPad
-  else if (boundingBox(ipadCornerX + ipadPickWidth/2, ipadCornerY + ipadPickHeight/2, ipadPickWidth, ipadPickHeight) == false && pickUp == true) {
-    pickUp = false
-    lastPutDown = frameCount
+  else if (boundingBox(ipadCornerX + ipadPickWidth/2, ipadCornerY + ipadPickHeight/2, ipadPickWidth, ipadPickHeight) == false && gameState.pickUp == true) {
+    gameState.pickUp = false
+    gameState.lastPutDown = frameCount
   }
   // Open settings by clicking wheel
-  else if (boundingBox(settingsX, settingsY, settingsD, settingsD) && settingsOpen == false) {
+  else if (settings_icon.boundingBox() && settingsOpen == false) {
     settingsOpen = true
   }
   // Close settings by clicking outside
-  else if (boundingBox(menuX + menuWidth/2, menuY + menuHeight/2, menuWidth, menuHeight) == false && settingsOpen == true){
+  else if (settings_menu.boundingBox() == false && settingsOpen == true){
     settingsOpen = false
   }
   // Brightness slider
@@ -196,43 +193,6 @@ function boundingBox(centerX, centerY, width, height, debug=false) {
   return(Math.abs(mouseX - centerX) <= width/2 && Math.abs(mouseY - centerY) <= height/2)
 }
 
-// OBJECTS TO DRAW // 
-
-function openSettings(settingsOpen) {
-  
-  if (settingsOpen) {
-    c = color('white')
-    c.setAlpha(130)
-    fill(c)
-    rect(menuX, menuY, menuWidth, menuHeight, 20)
-    fill(color('black'))
-    text('Sound on', X_(985), Y_(80))
-    text('Brightness adjust', X_(985), Y_(120))
-    fill('white')
-    stroke(color('black'))
-    circle(X_(1060), Y_(78), Y_(20))
-    noStroke()
-    // the filled in dot for sound on
-    stroke(color('black'))
-    strokeWeight(5)
-    line(sliderX, Y_(150), X_(1050), Y_(280))
-    for (let ii = 0; ii < sliderTicks; ii++){
-      line(sliderX + X_(10, adjust=false), sliderY + Y_(ii*sliderSpread), sliderX - X_(10, adjust=false), sliderY + Y_(ii*sliderSpread))
-    }
-    strokeWeight(1)
-    noStroke()
-    fill(color('white'))
-    circle(sliderX, sliderY + bright_mod, Y_(10))
-  }
-}
-
-function drawCandle(candleX,candleTopY,candleBottomY,candleRound,candleHeight,candleWidth) {
-  fill('#330000')
-  noStroke()
-  ellipse(candleX,candleTopY,candleWidth,candleRound)
-  rect(candleX - candleWidth/2,candleTopY,candleWidth,candleHeight)
-  ellipse(candleX,candleBottomY,candleWidth,candleRound)
-}
 
 function iSawTheIpadGlow(ipadX, ipadY, ipadWidth) {
   let c = color('#99FFFF')
@@ -400,7 +360,7 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
 
     fill(255)
     stroke(0)
-    rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
+    rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 - 5), X_(355,adjust=false), Y_(450))
     noStroke()
     fill(0)
     text("Hi sweetie,", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
@@ -420,14 +380,6 @@ function ipadFlicker(ipadX, ipadY, ipadWidth, ipadHeight, off=true) {
   else {
     iSawTheIpadGlow(ipadX, ipadY, ipadWidth)
   }
-}
-
-function skullFlash() {
-  image(face, X_(611), Y_(198), X_(17, adjust=false), Y_(25))
-  c = color('black')
-  c.setAlpha(220)
-  fill(c)
-  rect(X_(610), Y_(197), X_(19, adjust=false), Y_(26))
 }
 
 function thePlantsHaveEyes() {
@@ -476,26 +428,8 @@ function boo() {
   }
 }
 
-/// COORDINATE ADJUSTMENT FUNCTIONS ///
-
-function X_(input, adjust=true, coordWidth=1200) {
-  // imageWidth is the actual width of the image in pixels
-  // and coordWidth is the number input by the user for the 
-  // coordinate system
-  xAdjust = (windowWidth - imageWidth)/2; // adjustment to center image
-  if (adjust == true) {
-    return input/coordWidth * imageWidth + xAdjust
-  }
-  else {
-    return input/coordWidth * imageWidth
-  }
-}
-
-function Y_(input, coordHeight=900) {
-  // imageHeight is the actual height of the image in pixels
-  // and coordHeight is the number input by the user for the 
-  // coordinate system
-  return input/coordHeight * imageHeight
+function adjust_brightness(bright_mod) {
+  window = new Rect(0, 0, windowWidth, windowHeight, 'white', bright_mod)
 }
 
 // DEBUGGING //
