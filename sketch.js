@@ -13,6 +13,10 @@ function preload(){
 }
 
 function setup() {
+  // IMAGE SIZE //
+  imAspect = 900/1200
+  imageWidth = windowWidth*0.8;
+  imageHeight = imageWidth*imAspect;
   createCanvas(windowWidth, windowHeight);
 
   // BRIGHTNESS ADJUSTMENT WINDOW //
@@ -52,16 +56,69 @@ function setup() {
   flameWidth = 4; flameHeight = 7;
   flame = new Ellipse(candleX-2, candleTopY - flameWidth, flameWidth, flameHeight, '#FFFFCC', 255)
   illum = new Circle(candleX-2, candleTopY - flameWidth, 230, '#CC6600', 30)
+
+  // SMALL IPAD COORDS //
+  ipadX = 590; ipadWidth = 60; ipadY = 540; ipadHeight = 30;
+  glow = new Polygon([[ipadX, ipadY],[ipadX + ipadWidth, ipadY], [730, 0], [490, 0]], '#99FFFF', 30)
+  ipad_dark = new Polygon([[ipadX, ipadY], [ipadX - 12, ipadY + ipadHeight], [ipadX + ipadWidth + 8, ipadY + ipadHeight], [ipadX + ipadWidth, ipadY]], 'black', 200)
+  ipad_hitbox = new Rect(ipadX, ipadY, ipadWidth, ipadHeight, '', 0)
+
+  // BIG IPAD COORDS //
+  ipadCornerX = 400; ipadCornerY = 80; 
+  ipadPickWidth = 525; ipadPickHeight = 700;
+  ipadScreenX = ipadCornerX + 30; ipadScreenY = ipadCornerY + 30;
+  ipadScreenWidth = ipadPickWidth - 60; ipadScreenHeight = ipadPickHeight - 60
+  backButtonX = ipadCornerX + 50; backButtonY = ipadCornerY + 80; backButtonWidth = 20; backButtonHeight = 20;
+  backlight = new Rect(-windowWidth, 0, windowWidth*2, windowHeight, '#99FFFF', 40)
+  ipadBody = new Rect(ipadCornerX, ipadCornerY, ipadPickWidth, ipadPickHeight, 'gray', 255, 10)
+  ipadScreen = new Rect(ipadScreenX, ipadScreenY, ipadScreenWidth, ipadScreenHeight, 'white', 255)
+  ipadBarOne = new Rect(ipadScreenX + 10, ipadScreenY + 20, 5, 10, 'black', 255)
+  ipadBarTwo = new Rect(ipadScreenX + 20, ipadScreenY + 15, 5, 15, 'black', 255)
+  ipadBarThree = new Rect(ipadScreenX + 30, ipadScreenY + 10, 5, 20, 'black', 255)
+  ipadTime = new TextBox(ipadScreenX + (ipadScreenWidth/2) - 20 , ipadScreenY + 30, 'black', 255, '11:24 pm')
+  ipadBattery = new TextBox(ipadScreenX + ipadScreenWidth - 40, ipadScreenY + 30, 'black', 255, '32%')
+  ipad = new CompoundObject([backlight, ipadBody, ipadScreen, ipadBarOne, ipadBarTwo, ipadBarThree, ipadTime, ipadBattery])
+
+  // BACK BUTTON ON IPAD //
+  backRect = new Rect(backButtonX, backButtonY, backButtonWidth, backButtonHeight, 'white', 255, 1, 'black')
+  backImage = new Img(backButtonX, backButtonY, backButtonWidth, backButtonHeight, backArrow)
+  backButton = new CompoundObject([backRect, backImage])
+
+  // INBOX BUTTON ON IPAD //
+  inboxRect = new Rect(ipadScreenX + 45, ipadScreenY + 60, 80, 40, 'white', 255, 1, 'black')
+  inboxText = new TextBox(ipadScreenX + 60, ipadScreenY + 85, 'black', 255, 'Inbox', BOLD)
+  inboxButton = new CompoundObject([inboxRect, inboxText])
+
+  // DRAFTS BUTTON ON IPAD //
+  draftsRect = new Rect(ipadScreenX + 130, ipadScreenY + 60, 80, 40, 'white', 255, 1, 'black')
+  draftsText = new TextBox(ipadScreenX + 150, ipadScreenY + 85, 'black', 255, 'Drafts', BOLD)
+  draftsButton = new CompoundObject([draftsRect, draftsText])
+
+  // HEADER //
+  header = new TextBox(ipadScreenX + 80, adjust=false, ipadScreenY + 100, 'black', 255, '')
+
+  // 
+
+  // EMAILS //
+  headerTexts = ['To: Amanda Dobry | From: Jacob Dobry | please read (draft)', 'To: Jacob Dobry  |  From: us  |  obituary  sent today at 11:24pm']
+
+  // ipad top strip icons
+
+  fill(255)
+  stroke(0)
+  rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 - 5), X_(355,adjust=false), Y_(450))
+  noStroke()
+  fill(0)
+  text("Hi sweetie,", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
+  text("Sorry, you probably don't want to ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(280), X_(350,adjust=false), Y_(570))
+  text("I know you're mad ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(310), X_(350,adjust=false), Y_(570))
+  text("[need to say to check pic frame] ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(340), X_(350,adjust=false), Y_(570))
+
 }
 
 function draw() {
   // DRAW BLACK BACKGROUND //
   background(0)
-
-  // IMAGE SIZE //
-  imAspect = 900/1200
-  imageWidth = windowWidth*0.8;
-  imageHeight = imageWidth*imAspect;
   
   // DRAW APARTMENT //
   image(img, X_(0), Y_(0), imageWidth, imageHeight);
@@ -78,25 +135,7 @@ function draw() {
     settings_menu.display()
   }
 
-  // IPAD COORDS //
-  ipadX = X_(590); ipadWidth =  X_(60, adjust=false); ipadY = Y_(540);
-  ipadHeight = Y_(30);
-
-  // IPAD PICKED UP COORDS //
-  ipadPickWidth = 500;
-  ipadPickHeight = 700;
-
-  // IPAD BUTTON COORDS //
-  ipadCornerX = X_(imageWidth/2 - ipadPickWidth*.9/2);
-  ipadCornerY = Y_(100+(ipadPickHeight*.1/2));
-  backButtonX = ipadCornerX + X_(50, adjust=false); 
-  backButtonY = ipadCornerY + Y_(80); backButtonWidth = X_(20, adjust=false); 
-  backButtonHeight = Y_(20);
-
-  // EVENTS //
-
-  
-
+  // FLAME //
   if (gameState.clicks < 1) {
     flame.x += X_(sin(frameCount/10), adjust=false)/5
     illum.x += X_(sin(frameCount/10), adjust=false)/5
@@ -112,10 +151,10 @@ function draw() {
   // }
 
   if (frameCount < 100 || gameState.pickUp == true){
-    ipadFlicker(ipadX, ipadY, ipadWidth, ipadHeight)
+    ipad_dark.display()
   }
   else {
-    ipadFlicker(ipadX, ipadY, ipadWidth, ipadHeight, false)
+    glow.display()
   }
 
   if (gameState.clicks == 3 && frameCount - gameState.lastPutDown < 10) {
@@ -123,7 +162,10 @@ function draw() {
   }
 
   if (gameState.pickUp == true) {
-    pickUpIpad(ipadPickWidth, ipadPickHeight)
+    ipad.display()
+    backButton.display()
+    inboxButton.display()
+    draftsButton.display()
   }
 
   // if (clicks == 4 && pickUp == false && frameCount - lastPutDown > 100 && frameCount - lastPutDown < 110) {
@@ -140,7 +182,7 @@ function draw() {
 
   // DRAW CURSOR //
 
-  if (boundingBox(ipadX + ipadWidth/2, ipadY + ipadHeight/2, ipadWidth, ipadHeight) && gameState.clicks < 4 && gameState.pickUp == false) {
+  if (ipad_hitbox.boundingBox() && gameState.clicks < 4 && gameState.pickUp == false) {
     cursor(HAND)
   }
   else if (settings_circle.boundingBox() == true) {
@@ -157,12 +199,12 @@ function draw() {
 
 function mouseClicked(){
   // Pick up iPad
-  if (boundingBox(ipadX + ipadWidth/2, ipadY + ipadHeight/2, ipadWidth, ipadHeight) && gameState.pickUp==false) {
-    pickUp = true
-    clicks += 1
+  if (ipad_hitbox.boundingBox() && gameState.pickUp==false) {
+    gameState.pickUp = true
+    gameState.clicks += 1
   }
   // Put down the iPad
-  else if (boundingBox(ipadCornerX + ipadPickWidth/2, ipadCornerY + ipadPickHeight/2, ipadPickWidth, ipadPickHeight) == false && gameState.pickUp == true) {
+  else if (ipad_hitbox.boundingBox() == false && gameState.pickUp == true) {
     gameState.pickUp = false
     gameState.lastPutDown = frameCount
   }
@@ -180,75 +222,16 @@ function mouseClicked(){
     settings_menu.object_list[7].y = mouseY
   }
   // Back button in email
-  else if (boundingBox(backButtonX + backButtonWidth/2, backButtonY + backButtonHeight/2, backButtonWidth, backButtonHeight) && pickUp == true && (emailOpen == 1 || emailOpen == 2)){
-    emailOpen = 0
+  else if (backButton.boundingBox() && pickUp == true && (emailOpen == 1 || emailOpen == 2)){
+   emailOpen = 0
   }
   // Inbox from drafts
-  else if (boundingBox()){
-  }
+  // else if (boundingBox()){
+  // }
   // Drafts from inbox
-  else if (boundingBox()){
-  }
+  // else if (boundingBox()){
+  // }
   // Open one of the emails
-
-}
-
-// DEFINES BOUNDING BOX FOR CLICKS //
-
-function boundingBox(centerX, centerY, width, height, debug=false) {
-  if (debug==true) {
-    fill(color('red'))
-    rect(centerX - (width/2), centerY - (height/2), width, height)
-  }
-  return(Math.abs(mouseX - centerX) <= width/2 && Math.abs(mouseY - centerY) <= height/2)
-}
-
-
-function iSawTheIpadGlow(ipadX, ipadY, ipadWidth) {
-  let c = color('#99FFFF')
-  c.setAlpha(30)
-  fill(c)
-  noStroke()
-  // COORDS  
-  beginShape()
-  vertex(ipadX, ipadY)
-  vertex(ipadX + ipadWidth, ipadY)
-  vertex(X_(730), 0)
-  vertex(X_(490), 0)
-  endShape(CLOSE)
-}
-
-function ipadDark(ipadX, ipadY, ipadWidth, ipadHeight){
-  let c = color('black')
-  c.setAlpha(200)
-  fill(c)
-  beginShape()
-  vertex(ipadX, ipadY)
-  vertex(ipadX - X_(12,adjust=false), ipadY + ipadHeight)
-  vertex(ipadX + ipadWidth + X_(8,adjust=false), ipadY + ipadHeight)
-  vertex(ipadX + ipadWidth, ipadY)
-  endShape(CLOSE)
-}
-
-function pickUpIpad(ipadPickWidth,ipadPickHeight){
-  fill(100)
-  rect(X_(imageWidth/2 - ipadPickWidth/2), Y_(100), ipadPickWidth, ipadPickHeight, 10, 10)
-  let c = color('#99FFFF')
-  c.setAlpha(40)
-  fill(c)
-  rect(0,0,windowWidth,windowHeight)
-  fill(255)
-  rect(ipadCornerX, ipadCornerY, ipadPickWidth*.9, ipadPickHeight*.9)
-
-  // ipad top strip icons
-  fill(50)
-  rect(ipadCornerX + X_(10, adjust=false), ipadCornerY + Y_(20), X_(5, adjust=false), Y_(10))
-  rect(ipadCornerX + X_(20, adjust=false), ipadCornerY + Y_(15), X_(5, adjust=false), Y_(15))
-  rect(ipadCornerX + X_(30, adjust=false), ipadCornerY + Y_(10), X_(5, adjust=false), Y_(20))
-  text('11:24 pm', ipadCornerX + (ipadPickWidth/2) - X_(45, adjust=false), ipadCornerY + Y_(30))
-  text('32%', ipadCornerX + (ipadPickWidth) - X_(90, adjust=false), ipadCornerY + Y_(30))
-
-  emailScreen(ipadPickWidth, ipadPickHeight)
 
 }
 
@@ -256,26 +239,8 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
 
   // controlled by game state object emailOpen, which can be set to 0 (the
   // main page), 1 (the obit email), or 2 (the email from the dad to the girl)
-  if (emailOpen == 0) {
-    stroke(0)
-    fill(255)
-    rect(ipadCornerX + X_(45, adjust=false), ipadCornerY + Y_(60), X_(80, adjust=false), Y_(40))
-    noStroke()
+  if (gameState.emailOpen == 0) {
 
-    fill(0)
-    textStyle(BOLD)
-    text('Inbox', ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(85))
-    textStyle(NORMAL)
-
-    stroke(0)
-    fill(255)
-    rect(ipadCornerX + X_(130, adjust=false), ipadCornerY + Y_(60), X_(80, adjust=false), Y_(40))
-    noStroke()
-
-    fill(0)
-    textStyle(BOLD)
-    text('Drafts', ipadCornerX + X_(150, adjust=false), ipadCornerY + Y_(85))
-    textStyle(NORMAL)
 
     if (inboxOrDrafts == 0) {
       fill(255)
@@ -308,13 +273,8 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
   }
 
 
-  if (emailOpen == 1) {
-    stroke(0)
-    fill(255)
-    rect(backArrow, backButtonX, backButtonY, backButtonWidth, back_buttonHeight)
-    image(backArrow, backButtonX, backButtonY, backButtonWidth, back_buttonHeight)
-    noStroke()
-    fill(0)
+  if (gameState.emailOpen == 1) {
+
     textStyle(BOLD)
     text('To: Jacob Dobry  |  From: us  |  obituary  sent today at 11:24pm', ipadCornerX + X_(80, adjust=false), ipadCornerY + Y_(100))
     textStyle(NORMAL)
@@ -344,40 +304,13 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
     }
   }
 
-  if (emailOpen == 2) {
-    stroke(0)
-    fill(255)
-    rect(backButtonX, backButtonY, backButtonWidth, backButtonHeight)
-    image(backArrow, backButtonX, backButtonY, backButtonWidth, backButtonHeight)
-    noStroke()
-    fill(0)
-    textStyle(BOLD)
-    text('To: Amanda Dobry | From: Jacob Dobry | please read (draft)', ipadCornerX + X_(80, adjust=false), ipadCornerY + Y_(100))
-    textStyle(NORMAL)
+  if (gameState.emailOpen == 2) {
 
-    fill(255)
-    stroke(0)
-    rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 - 5), X_(355,adjust=false), Y_(450))
-    noStroke()
-    fill(0)
-    text("Hi sweetie,", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
-    text("Sorry, you probably don't want to ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(280), X_(350,adjust=false), Y_(570))
-    text("I know you're mad ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(310), X_(350,adjust=false), Y_(570))
-    text("[need to say to check pic frame] ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(340), X_(350,adjust=false), Y_(570))
   }
 
 }
 
 /// EVENTS ///
-
-function ipadFlicker(ipadX, ipadY, ipadWidth, ipadHeight, off=true) {
-  if (off) {
-    ipadDark(ipadX, ipadY, ipadWidth, ipadHeight)
-  }
-  else {
-    iSawTheIpadGlow(ipadX, ipadY, ipadWidth)
-  }
-}
 
 function thePlantsHaveEyes() {
   fill('red')
@@ -386,19 +319,17 @@ function thePlantsHaveEyes() {
 }
 
 function snuffedOut(){
-  if (frameSnuffed == false){
-    frameSnuffed = frameCount
+  if (gameState.frameSnuffed == false){
+    gameState.frameSnuffed = frameCount
   }
-
-  if ((frameCount - frameSnuffed) % 10 == 0 || frameCount == frameSnuffed) {
+  if ((frameCount - gameState.frameSnuffed) % 10 == 0 || frameCount == gameState.frameSnuffed) {
     pts = []
     for (let i = 0; i < 4; i++){
       pts.push(X_(random(-7,7), adjust=false))
     }
   }
-
   c = color('white')
-  c.setAlpha(80 + (frameSnuffed - frameCount)/10)
+  c.setAlpha(80 + (gameState.frameSnuffed - frameCount)/10)
   fill(c)
   beginShape()
   vertex(X_(450), Y_(510))

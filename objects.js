@@ -73,6 +73,22 @@ class Ellipse extends Box {
     }
 }
 
+class Polygon extends Box {
+    constructor(points, c, alpha, stroke=null, stroke_color=0) {
+        super(0, 0, c, alpha, stroke, stroke_color)
+        this.points = points
+    }
+    display() {
+        this.setColor()
+        beginShape()
+        for (let i = 0; i < this.points.length; i++) {
+            vertex(X_(this.points[i][0]), Y_(this.points[i][1]))
+        }
+        endShape(CLOSE)
+    }
+}
+
+
 class Img extends Box {
     constructor(x, y, width, height, image=''){
         super(x, y)
@@ -86,12 +102,14 @@ class Img extends Box {
 }
 
 class TextBox extends Box {
-    constructor(x, y, c='', alpha=255, txt='') {
+    constructor(x, y, c='', alpha=255, txt='', style=NORMAL) {
         super(x, y, c, alpha)
         this.txt = txt
+        this.style = style
     }
     display() {
         this.setColor()
+        textStyle(this.style)
         text(this.txt, this.x, this.y)
     }
 }
