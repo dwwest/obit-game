@@ -15,6 +15,9 @@ function preload(){
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
+  // BRIGHTNESS ADJUSTMENT WINDOW //
+  bright_window = new Rect(-windowWidth/2, 0, windowWidth*2, windowHeight, 'white', gameState.bright_mod)
+
   // PHOTO SHADOW //
   photo_shadow = new Rect(560, 140, 150, 180, 'black', 140);
 
@@ -25,30 +28,30 @@ function setup() {
   
   // SETTINGS MENU OBJECTS //
   menu_box = new Rect(975, 15, 150, 300, 'white', 130, 20)
-  sound_text = new Text(985, 80, 'black', 255, 'Sound on')
-  bright_text = new Text(985, 120, 'black', 255, 'Brightness adjust')
+  sound_text = new TextBox(985, 80, 'black', 255, 'Sound on')
+  bright_text = new TextBox(985, 120, 'black', 255, 'Brightness adjust')
   sound_clicker = new Circle(1060, 78, 20, 'black', 255, 1, 255)
-  sliderX = 1050; sliderY = 150; sliderTicks = 6; sliderSpread = 26
-  slider = new Rect(1050, 150, 5, 280, 'black', 255, 10)
-  ticks = []
-  for (let ii = 0; ii < sliderTicks; ii++){
-    ticks.push(new Rect(sliderX + 10, sliderY + ii*sliderSpread, sliderX - 10, sliderY + ii*sliderSpread))
-  }
-  bright_indicator = new Circle(sliderX, sliderY + gameState.bright_mod, Y_(10))
-  settings_menu = new CompoundObject([menu_box, sound_text, bright_text, sound_clicker, slider, bright_indicator], 0)
+  sliderX = 1050; sliderY = 150; sliderWidth = 5; sliderHeight = 150
+  slider = new Rect(sliderX, sliderY, 5, 150, 'black', 255, 10)
+  bottom_tick = new Rect(sliderX - 10, sliderY + sliderHeight - 5, 25, sliderWidth, 'black', 255, 5)
+  top_tick = new Rect(sliderX - 10, sliderY, 25, sliderWidth, 'black', 255, 10)
+  bright_indicator = new Circle(sliderX + 2.5, sliderY - 2.5 + sliderHeight, 15, 'white', 255)
+  settings_menu = new CompoundObject([menu_box, sound_text, bright_text, sound_clicker, slider, top_tick, bottom_tick, bright_indicator], 0)
 
   // CANDLE //
   candle_color = '#330000'
   candleX = 451; candleTopY = 510; candleBottomY = 525; candleRound = 8;
   candleWidth = 25; candleHeight = 15;
 
-  candle_bottom = new Ellipse(candleX, candleBottomY, candleWidth, candleRound, candle_color)
-  candle_side = new Rect(candleX - candleWidth/2, candleTopY, candleWidth, candleHeight, candle_color)
-  candle_top = new Ellipse(candleX, candleTopY, candleWidth, candleRound, candle_color)
+  candle_bottom = new Ellipse(candleX, candleBottomY, candleWidth, candleRound, candle_color, 255)
+  candle_side = new Rect(candleX - candleWidth/2, candleTopY, candleWidth, candleHeight, candle_color, 255)
+  candle_top = new Ellipse(candleX, candleTopY, candleWidth, candleRound, candle_color, 255)
   candle = new CompoundObject([candle_bottom, candle_side, candle_top])
 
   // FLAME //
-
+  flameWidth = 4; flameHeight = 7;
+  flame = new Ellipse(candleX-2, candleTopY - flameWidth, flameWidth, flameHeight, '#FFFFCC', 255)
+  illum = new Circle(candleX-2, candleTopY - flameWidth, 230, '#CC6600', 30)
 }
 
 function draw() {
@@ -71,6 +74,9 @@ function draw() {
 
   // SETTINGS MENU //
   settings_icon.display()
+  if (gameState.settingsOpen == true) {
+    settings_menu.display()
+  }
 
   // IPAD COORDS //
   ipadX = X_(590); ipadWidth =  X_(60, adjust=false); ipadY = Y_(540);
@@ -89,11 +95,13 @@ function draw() {
 
   // EVENTS //
 
-  settings_menu.display()
-
   
+
   if (gameState.clicks < 1) {
-    drawFlame(candleX,candleTopY)
+    flame.x += X_(sin(frameCount/10), adjust=false)/5
+    illum.x += X_(sin(frameCount/10), adjust=false)/5
+    flame.display()
+    illum.display()
   }
   else {
     snuffedOut()
@@ -128,13 +136,14 @@ function draw() {
   // }
 
   adjust_brightness(gameState.bright_mod)
+  bright_window.display()
 
   // DRAW CURSOR //
 
-  if (boundingBox(ipadX + ipadWidth/2, ipadY + ipadHeight/2, ipadWidth, ipadHeight) && clicks < 4 && pickUp == false) {
+  if (boundingBox(ipadX + ipadWidth/2, ipadY + ipadHeight/2, ipadWidth, ipadHeight) && gameState.clicks < 4 && gameState.pickUp == false) {
     cursor(HAND)
   }
-  else if (settings_icon.boundingBox()) {
+  else if (settings_circle.boundingBox() == true) {
     cursor(HAND)
   }
   else {
@@ -145,9 +154,10 @@ function draw() {
 
 /// CLICKS ///
 
+
 function mouseClicked(){
   // Pick up iPad
-  if (boundingBox(ipadX + ipadWidth/2, ipadY + ipadHeight/2, ipadWidth, ipadHeight) && pickUp==false) {
+  if (boundingBox(ipadX + ipadWidth/2, ipadY + ipadHeight/2, ipadWidth, ipadHeight) && gameState.pickUp==false) {
     pickUp = true
     clicks += 1
   }
@@ -157,18 +167,18 @@ function mouseClicked(){
     gameState.lastPutDown = frameCount
   }
   // Open settings by clicking wheel
-  else if (settings_icon.boundingBox() && settingsOpen == false) {
-    settingsOpen = true
+  else if (settings_circle.boundingBox() && gameState.settingsOpen == false) {
+    gameState.settingsOpen = true
   }
   // Close settings by clicking outside
-  else if (settings_menu.boundingBox() == false && settingsOpen == true){
-    settingsOpen = false
+  else if (menu_box.boundingBox() == false && gameState.settingsOpen == true){
+    gameState.settingsOpen = false
   }
   // Brightness slider
-  else if (boundingBox(sliderX, sliderY + Y_(sliderSpread*(sliderTicks-1))/2, X_(10, adjust=false), Y_(sliderSpread*(sliderTicks-1))) && settingsOpen == true){
-    bright_mod = (mouseY - sliderY)
+  else if (settings_menu.object_list[4].boundingBox()){
+    gameState.bright_mod = Math.abs(mouseY - sliderHeight - sliderY)/sliderHeight * 50
+    settings_menu.object_list[7].y = mouseY
   }
-
   // Back button in email
   else if (boundingBox(backButtonX + backButtonWidth/2, backButtonY + backButtonHeight/2, backButtonWidth, backButtonHeight) && pickUp == true && (emailOpen == 1 || emailOpen == 2)){
     emailOpen = 0
@@ -218,19 +228,6 @@ function ipadDark(ipadX, ipadY, ipadWidth, ipadHeight){
   vertex(ipadX + ipadWidth + X_(8,adjust=false), ipadY + ipadHeight)
   vertex(ipadX + ipadWidth, ipadY)
   endShape(CLOSE)
-}
-
-function drawFlame(candleX,candleTopY,flameSize=1) {
-  fill('#FFFFCC')
-  flameWidth = X_(4,adjust=false); flameHeight = Y_(7)*flameSize;
-  candleTopY = candleTopY - flameWidth
-  illumSize = X_(213,adjust=false)*flameSize
-  noStroke()
-  ellipse(candleX+sin(frameCount/10),candleTopY,flameWidth,flameHeight)
-  let c = color('#CC6600');
-  c.setAlpha(30);
-  fill(c);
-  circle(candleX+sin(frameCount/10),candleTopY,illumSize)
 }
 
 function pickUpIpad(ipadPickWidth,ipadPickHeight){
@@ -329,13 +326,13 @@ function emailScreen(ipadPickWidth, ipadPickHeight){
     obitList = [obit1, obit2, obit3, obit4]
 
     fill(0)
-    if (clicks < 5) {
+    if (gameState.clicks < 5) {
       fill(255)
       stroke(0)
       rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 - 5), X_(355,adjust=false), Y_(450))
       noStroke()
       fill(0)
-      text(obitList[clicks-1], X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
+      text(obitList[gameState.clicks-1], X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
     }
     else {
       fill(255)
@@ -428,8 +425,8 @@ function boo() {
   }
 }
 
-function adjust_brightness(bright_mod) {
-  window = new Rect(0, 0, windowWidth, windowHeight, 'white', bright_mod)
+function adjust_brightness() {
+  bright_window.alpha = gameState.bright_mod
 }
 
 // DEBUGGING //

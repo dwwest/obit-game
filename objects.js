@@ -35,16 +35,11 @@ class Rect extends Box {
         fill(color('red'))
         rect(this.x, this.y, this.width, this.height)
         }
-        return(Math.abs(mouseX - this.x) <= this.width/2 && Math.abs(mouseY - this.y) <= this.height/2)
+        return(Math.abs(this.x + this.width/2 - mouseX) <= this.width/2 && Math.abs(this.y + this.height/2 - mouseY) <= this.height/2)
     }
     display() {
         this.setColor()
-        if (round != null) {
-            rect(this.x, this.y, this.width, this.height, this.round)
-        }
-        else {
-            rect(this.x, this.y, this.width, this.height);
-        }
+        rect(this.x, this.y, this.width, this.height, this.round)
     }
 }
 
@@ -92,7 +87,7 @@ class Img extends Box {
 
 class TextBox extends Box {
     constructor(x, y, c='', alpha=255, txt='') {
-        super(x, y)
+        super(x, y, c, alpha)
         this.txt = txt
     }
     display() {
@@ -108,9 +103,10 @@ class CompoundObject {
         this.object_list = object_list
         this.bounder_ind = bounder_ind
     }
-    boundingBox() {
-        this.object_list[this.bounder_ind].boundingBox()
-    }
+    // commented the following lines out because this wasn't working
+    // boundingBox() {
+    //     this.object_list[this.bounder_ind].boundingBox()
+    // }
     display() {
         for (let i = 0; i < this.object_list.length; i++) {
             this.object_list[i].display()
