@@ -102,15 +102,17 @@ class Img extends Box {
 }
 
 class TextBox extends Box {
-    constructor(x, y, c='', alpha=255, txt='', style=NORMAL) {
+    constructor(x, y, c='', alpha=255, txt='', style=NORMAL, width=1000, height=20) {
         super(x, y, c, alpha)
+        this.width = width
+        this.heigh = height
         this.txt = txt
         this.style = style
     }
     display() {
         this.setColor()
         textStyle(this.style)
-        text(this.txt, this.x, this.y)
+        text(this.txt, this.x, this.y, this.width, this. height)
     }
 }
 
@@ -142,8 +144,8 @@ class GameState {
         this.bright_mod = bright_mod || 0
         this.clicks = clicks || 0
         this.frameSnuffed = frameSnuffed || false
-        this.emailOpen = emailOpen || 2
-        this.inboxOrDrafts = inboxOrDrafts || 0
+        this.emailOpen = emailOpen || 0
+        this.inboxOrDrafts = inboxOrDrafts || 1
         this.lastPutDown = lastPutDown || 0;
     }
 }

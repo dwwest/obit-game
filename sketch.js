@@ -80,43 +80,39 @@ function setup() {
   ipad = new CompoundObject([backlight, ipadBody, ipadScreen, ipadBarOne, ipadBarTwo, ipadBarThree, ipadTime, ipadBattery])
 
   // BACK BUTTON ON IPAD //
-  backRect = new Rect(backButtonX, backButtonY, backButtonWidth, backButtonHeight, 'white', 255, 1, 'black')
+  backButton = new Rect(backButtonX, backButtonY, backButtonWidth, backButtonHeight, 'white', 255, 1, 'black')
   backImage = new Img(backButtonX, backButtonY, backButtonWidth, backButtonHeight, backArrow)
-  backButton = new CompoundObject([backRect, backImage])
 
   // INBOX BUTTON ON IPAD //
-  inboxRect = new Rect(ipadScreenX + 45, ipadScreenY + 60, 80, 40, 'white', 255, 1, 'black')
+  inboxButton = new Rect(ipadScreenX + 45, ipadScreenY + 60, 80, 40, 'white', 255, 1, 'black')
   inboxText = new TextBox(ipadScreenX + 60, ipadScreenY + 85, 'black', 255, 'Inbox', BOLD)
-  inboxButton = new CompoundObject([inboxRect, inboxText])
 
   // DRAFTS BUTTON ON IPAD //
-  draftsRect = new Rect(ipadScreenX + 130, ipadScreenY + 60, 80, 40, 'white', 255, 1, 'black')
+  draftsButton = new Rect(ipadScreenX + 130, ipadScreenY + 60, 80, 40, 'white', 255, 1, 'black')
   draftsText = new TextBox(ipadScreenX + 150, ipadScreenY + 85, 'black', 255, 'Drafts', BOLD)
-  draftsButton = new CompoundObject([draftsRect, draftsText])
 
-  // HEADER //
-  header = new TextBox(ipadScreenX + 80, adjust=false, ipadScreenY + 100, 'black', 255, '')
-
-  // 
+  // MENU LABELS //
+  menuRect = new Rect(ipadScreenX + 40, 230, 355, 450, 'white', 255, 1, 'black')
+  emailButton = new Rect(ipadScreenX + 40, 230, 355, 70, 'white', 255, 1, 'black')
+  emailSubjectText = ['please read', 'obituary']
+  emailToText = ['To: Amanda Dobry', 'To: Jacob Dobry | From: us']
+  emailTimestampText = ['last opened: August 30, 2024', 'sent today at 11:24pm']
+  emailSubject = new TextBox(ipadScreenX + 60, ipadScreenY + 140, 'black', 255, emailSubjectText[gameState.inboxOrDrafts], BOLD)
+  emailTo = new TextBox(ipadScreenX + 60, ipadScreenY + 155, 'black', 255, emailToText[gameState.inboxOrDrafts], BOLD)
+  emailTimestamp = new TextBox(ipadScreenX + 60, ipadScreenY + 170, 'black', 255, emailTimestampText[gameState.inboxOrDrafts], BOLD)
+  menu = new CompoundObject([menuRect, emailButton, emailSubject, emailTo, emailTimestamp, inboxButton, inboxText, draftsButton, draftsText])
 
   // EMAILS //
   headerTexts = ['To: Amanda Dobry | From: Jacob Dobry | please read (draft)', 'To: Jacob Dobry  |  From: us  |  obituary  sent today at 11:24pm']
-
-  // ipad top strip icons
-
-  fill(255)
-  stroke(0)
-  rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 - 5), X_(355,adjust=false), Y_(450))
-  noStroke()
-  fill(0)
-  text("Hi sweetie,", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
-  text("Sorry, you probably don't want to ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(280), X_(350,adjust=false), Y_(570))
-  text("I know you're mad ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(310), X_(350,adjust=false), Y_(570))
-  text("[need to say to check pic frame] ", X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(340), X_(350,adjust=false), Y_(570))
+  header = new TextBox(ipadScreenX + 40, ipadScreenY + 100, 'black', 255, headerTexts[gameState.inboxOrDrafts], BOLD)
+  emailBox = new Rect(ipadScreenX + 40, 230, 355, 450, 'white', 255, 1, 'black')
+  emailContent = new TextBox(ipadScreenX + 60, 250, 'black', 255, obits[gameState.emailOpen], NORMAL, 300, 450)
+  email = new CompoundObject([header, emailBox, emailContent, backButton, backImage])
 
 }
 
 function draw() {
+
   // DRAW BLACK BACKGROUND //
   background(0)
   
@@ -163,9 +159,14 @@ function draw() {
 
   if (gameState.pickUp == true) {
     ipad.display()
-    backButton.display()
-    inboxButton.display()
-    draftsButton.display()
+    
+    if (gameState.emailOpen == 0) {
+      menu.display()
+    }  
+    else if (gameState.emailOpen > 0) {
+      email.display()
+    }
+
   }
 
   // if (clicks == 4 && pickUp == false && frameCount - lastPutDown > 100 && frameCount - lastPutDown < 110) {
@@ -176,6 +177,7 @@ function draw() {
   //   fill('black')
   //   rect(X_(0), Y_(0), X_(1200, adjust=0), Y_(900))
   // }
+
 
   adjust_brightness(gameState.bright_mod)
   bright_window.display()
@@ -198,15 +200,11 @@ function draw() {
 
 
 function mouseClicked(){
+
   // Pick up iPad
   if (ipad_hitbox.boundingBox() && gameState.pickUp==false) {
     gameState.pickUp = true
     gameState.clicks += 1
-  }
-  // Put down the iPad
-  else if (ipad_hitbox.boundingBox() == false && gameState.pickUp == true) {
-    gameState.pickUp = false
-    gameState.lastPutDown = frameCount
   }
   // Open settings by clicking wheel
   else if (settings_circle.boundingBox() && gameState.settingsOpen == false) {
@@ -221,94 +219,37 @@ function mouseClicked(){
     gameState.bright_mod = Math.abs(mouseY - sliderHeight - sliderY)/sliderHeight * 50
     settings_menu.object_list[7].y = mouseY
   }
+  else if (gameState.pickup == true) {
   // Back button in email
-  else if (backButton.boundingBox() && pickUp == true && (emailOpen == 1 || emailOpen == 2)){
-   emailOpen = 0
-  }
-  // Inbox from drafts
-  // else if (boundingBox()){
-  // }
-  // Drafts from inbox
-  // else if (boundingBox()){
-  // }
-  // Open one of the emails
+    if (backButton.boundingBox() && (gameState.emailOpen == 1 || gameState.emailOpen == 2)){
+      gameState.emailOpen = 0
+    }
+    // Inbox from drafts
+    // else if (emailButton.boundingBox()){
+      // gameState.emailOpen = 1
+      // email.object_list[2].txt = obits[0]
+    // }
+    // Drafts from inbox
+    // else if (inboxButton.boundingBox()){
+    //   menu.object_list[2].txt = emailSubjectText[0]
+    //   menu.object_list[3].txt = emailToText[0]
+    //   menu.object_list[4].txt = emailTimestampText[0]
+    // }
+    // Inbox from drafts
+    // else if (draftsButton.boundingBox()){
+    //   menu.object_list[2].txt = emailSubjectText[1]
+    //   menu.object_list[3].txt = emailToText[1]
+    //   menu.object_list[4].txt = emailTimestampText[1]
+    // }
+    // Put down the iPad
+    else if (ipadBody.boundingBox() == false) {
+      gameState.pickUp = false
+      gameState.lastPutDown = frameCount
+    }
 
+  }
 }
 
-function emailScreen(ipadPickWidth, ipadPickHeight){
-
-  // controlled by game state object emailOpen, which can be set to 0 (the
-  // main page), 1 (the obit email), or 2 (the email from the dad to the girl)
-  if (gameState.emailOpen == 0) {
-
-
-    if (inboxOrDrafts == 0) {
-      fill(255)
-      stroke(0)
-      rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
-      rect(X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(345,adjust=false), Y_(70))
-      noStroke()
-      fill(0)
-      textStyle(BOLD)
-      text("obituary", ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(140))
-      text('To: Jacob Dobry  |  From: us  ', ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(155))
-      text("sent today at 11:24pm", ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(170))
-      textStyle(NORMAL)
-    }
-
-    if (inboxOrDrafts == 1) {
-      fill(255)
-      stroke(0)
-      rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 -5), X_(355,adjust=false), Y_(450))
-      rect(X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(345,adjust=false), Y_(70))
-      noStroke()
-      fill(0)
-      textStyle(BOLD)
-      text("please read", ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(140))
-      text('To: Amanda Dobry', ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(155))
-      text("last opened: August 30, 2024", ipadCornerX + X_(60, adjust=false), ipadCornerY + Y_(170))
-      textStyle(NORMAL)
-    }
-
-  }
-
-
-  if (gameState.emailOpen == 1) {
-
-    textStyle(BOLD)
-    text('To: Jacob Dobry  |  From: us  |  obituary  sent today at 11:24pm', ipadCornerX + X_(80, adjust=false), ipadCornerY + Y_(100))
-    textStyle(NORMAL)
-
-    let obit1 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 31rd, 2024.  Those who gathered report he died with a smile on his face. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his loving wife of 24 years, Mallory Dobry neé Nesbitt, and his daughter, Amanda Dobry. In the five years before his death, he devoted himself to the Church of the Mind, becoming a pillar of the spiritual community.  Those who knew Jacob described him as happy and hardworking.  He will be greatly missed. A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm in the same old church he and his wife were married."
-    let obit2 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 31rd, 2024.  Those who gathered report he died with a smile on his face, though you doubt their word. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his loving wife of 24 years, Mallory Dobry neé Nesbitt, and you, his daughter.  In the five years before his death, he devoted himself to the Church of the Mind, becoming a pillar of the spiritual community.  You didn't know he'd joined the Church of the Mind for many years.  Not until it was too late.  Those who knew Jacob described him as happy and hardworking.  Your own mother called him bottled up.  Her mother called him, 'just a man, what did you expect?' You called him unstable.  He called you a worry wart. A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm in the same church he and your mother were married in."
-    let obit3 = "Jacob Dobry, 47, passed away peacefully in his sleep on Sunday, August 3rd, 2024.  Those who gathered report he died with a smile on his face, though you doubt their word. Jacob was born on May 4th, 1977 in a small town to parents who loved him.  He is survived by his estranged wife, Mallory Dolbry and he is survived by you, his ever-hating daughter. He told you he joined the church at Christmas.  He told you he planned to give Us his mind over mashed potatoes and dry turkey.  He had to explain it to you, to describe the incredible meetings he’d been to, the process of cranial insertion.  He tried to describe the beautiful void of connection and love shared without walls, but you wouldn’t listen. Mallory called you selfish.  Jacob called you nothing at all.  By then he was no longer just himself. You see Us as grotesque.  Unnatural.  As though you yourself are not composed of four billion odd neurons.  Where do you end and your pieces begin? A service will be held to honor the life of Jacob Dolbry on September 17, 2024 at 4pm."
-    let obit4 = "We will be there. We’ve been waiting for you."
-    obitList = [obit1, obit2, obit3, obit4]
-
-    fill(0)
-    if (gameState.clicks < 5) {
-      fill(255)
-      stroke(0)
-      rect(X_(imageWidth/2 - ipadPickWidth*.7/2 - 5), Y_(250 - 5), X_(355,adjust=false), Y_(450))
-      noStroke()
-      fill(0)
-      text(obitList[gameState.clicks-1], X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
-    }
-    else {
-      fill(255)
-      stroke(0)
-      rect(X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
-      noStroke()
-      fill(0)
-      text(obitList[3], X_(imageWidth/2 - ipadPickWidth*.7/2), Y_(250), X_(350,adjust=false), Y_(570))
-    }
-  }
-
-  if (gameState.emailOpen == 2) {
-
-  }
-
-}
 
 /// EVENTS ///
 
