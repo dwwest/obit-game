@@ -26,19 +26,19 @@ function setup() {
   photo_shadow = new Rect(560, 140, 150, 180, 'black', 140);
 
   // SETTINGS ICON OBJECTS //
-  settings_circle = new Circle(1100, 40, 40, 'gray', alpha=140)
+  settings_circle = new Circle(1100, 40, 40, 'gray', 140)
   settings_gear = new Img(1090, 30, 20, 20, gear)
   settings_icon = new CompoundObject([settings_circle, settings_gear], 0)
   
   // SETTINGS MENU OBJECTS //
-  menu_box = new Rect(975, 15, 150, 300, 'white', 130, 20)
+  menu_box = new Rect(975, 15, 150, 300, 'white', 130, null, 0, 20)
   sound_text = new TextBox(985, 80, 'black', 255, 'Sound on')
   bright_text = new TextBox(985, 120, 'black', 255, 'Brightness adjust')
-  sound_clicker = new Circle(1060, 78, 20, 'black', 255, 1, 255)
+  sound_clicker = new Circle(1060, 78, 20, 'black', 255)
   sliderX = 1050; sliderY = 150; sliderWidth = 5; sliderHeight = 150
-  slider = new Rect(sliderX, sliderY, 5, 150, 'black', 255, 10)
-  bottom_tick = new Rect(sliderX - 10, sliderY + sliderHeight - 5, 25, sliderWidth, 'black', 255, 5)
-  top_tick = new Rect(sliderX - 10, sliderY, 25, sliderWidth, 'black', 255, 10)
+  slider = new Rect(sliderX, sliderY, 5, 150, 'black', 255, null, 0, 10)
+  bottom_tick = new Rect(sliderX - 10, sliderY + sliderHeight - 5, 25, sliderWidth, 'black', 255, null, 0, 5)
+  top_tick = new Rect(sliderX - 10, sliderY, 25, sliderWidth, 'black', 255, null, 0, 10)
   bright_indicator = new Circle(sliderX + 2.5, sliderY - 2.5 + sliderHeight, 15, 'white', 255)
   settings_menu = new CompoundObject([menu_box, sound_text, bright_text, sound_clicker, slider, top_tick, bottom_tick, bright_indicator], 0)
 
@@ -70,8 +70,8 @@ function setup() {
   ipadScreenWidth = ipadPickWidth - 60; ipadScreenHeight = ipadPickHeight - 60
   backButtonX = ipadCornerX + 50; backButtonY = ipadCornerY + 80; backButtonWidth = 20; backButtonHeight = 20;
   backlight = new Rect(-windowWidth, 0, windowWidth*2, windowHeight, '#99FFFF', 40)
-  ipadBody = new Rect(ipadCornerX, ipadCornerY, ipadPickWidth, ipadPickHeight, 'gray', 255, 10)
-  ipadScreen = new Rect(ipadScreenX, ipadScreenY, ipadScreenWidth, ipadScreenHeight, 'white', 255)
+  ipadBody = new Rect(ipadCornerX, ipadCornerY, ipadPickWidth, ipadPickHeight, 'gray', 255, null, 0, 10)
+  ipadScreen = new Rect(ipadScreenX, ipadScreenY, ipadScreenWidth, ipadScreenHeight, 'white', 255, 1, 'black')
   ipadBarOne = new Rect(ipadScreenX + 10, ipadScreenY + 20, 5, 10, 'black', 255)
   ipadBarTwo = new Rect(ipadScreenX + 20, ipadScreenY + 15, 5, 15, 'black', 255)
   ipadBarThree = new Rect(ipadScreenX + 30, ipadScreenY + 10, 5, 20, 'black', 255)
@@ -94,19 +94,19 @@ function setup() {
   // MENU LABELS //
   menuRect = new Rect(ipadScreenX + 40, 230, 355, 450, 'white', 255, 1, 'black')
   emailButton = new Rect(ipadScreenX + 40, 230, 355, 70, 'white', 255, 1, 'black')
-  emailSubjectText = ['please read', 'obituary']
-  emailToText = ['To: Amanda Dobry', 'To: Jacob Dobry | From: us']
-  emailTimestampText = ['last opened: August 30, 2024', 'sent today at 11:24pm']
+  emailSubjectText = ['obituary', 'please read']
+  emailToText = ['To: Jacob Dobry | From: us', 'To: Amanda Dobry']
+  emailTimestampText = ['sent today at 11:24pm', 'last opened: August 30, 2024']
   emailSubject = new TextBox(ipadScreenX + 60, ipadScreenY + 140, 'black', 255, emailSubjectText[gameState.inboxOrDrafts], BOLD)
   emailTo = new TextBox(ipadScreenX + 60, ipadScreenY + 155, 'black', 255, emailToText[gameState.inboxOrDrafts], BOLD)
   emailTimestamp = new TextBox(ipadScreenX + 60, ipadScreenY + 170, 'black', 255, emailTimestampText[gameState.inboxOrDrafts], BOLD)
   menu = new CompoundObject([menuRect, emailButton, emailSubject, emailTo, emailTimestamp, inboxButton, inboxText, draftsButton, draftsText])
 
   // EMAILS //
-  headerTexts = ['To: Amanda Dobry | From: Jacob Dobry | please read (draft)', 'To: Jacob Dobry  |  From: us  |  obituary  sent today at 11:24pm']
+  headerTexts = ['To: Jacob Dobry  |  From: us  |  obituary  sent today at 11:24pm', 'To: Amanda Dobry | From: Jacob Dobry | please read (draft)']
   header = new TextBox(ipadScreenX + 40, ipadScreenY + 100, 'black', 255, headerTexts[gameState.inboxOrDrafts], BOLD)
   emailBox = new Rect(ipadScreenX + 40, 230, 355, 450, 'white', 255, 1, 'black')
-  emailContent = new TextBox(ipadScreenX + 60, 250, 'black', 255, obits[gameState.emailOpen], NORMAL, 300, 450)
+  emailContent = new TextBox(ipadScreenX + 60, 250, 'black', 255, obits[0], NORMAL, 300, 450)
   email = new CompoundObject([header, emailBox, emailContent, backButton, backImage])
 
 }
@@ -163,7 +163,7 @@ function draw() {
     if (gameState.emailOpen == 0) {
       menu.display()
     }  
-    else if (gameState.emailOpen > 0) {
+    else if (gameState.emailOpen == 1) {
       email.display()
     }
 
@@ -205,6 +205,7 @@ function mouseClicked(){
   if (ipad_hitbox.boundingBox() && gameState.pickUp==false) {
     gameState.pickUp = true
     gameState.clicks += 1
+    updateEmailByGamestate()
   }
   // Open settings by clicking wheel
   else if (settings_circle.boundingBox() && gameState.settingsOpen == false) {
@@ -215,32 +216,35 @@ function mouseClicked(){
     gameState.settingsOpen = false
   }
   // Brightness slider
-  else if (settings_menu.object_list[4].boundingBox()){
+  else if (settings_menu.object_list[4].boundingBox() && gameState.settingsOpen == true){
     gameState.bright_mod = Math.abs(mouseY - sliderHeight - sliderY)/sliderHeight * 50
     settings_menu.object_list[7].y = mouseY
   }
-  else if (gameState.pickup == true) {
+  else if (gameState.pickUp == true) {
   // Back button in email
-    if (backButton.boundingBox() && (gameState.emailOpen == 1 || gameState.emailOpen == 2)){
+    if (backButton.boundingBox() && gameState.emailOpen > 0){
       gameState.emailOpen = 0
     }
+    // Open an email
+    else if (emailButton.boundingBox()){
+      updateEmailByGamestate()
+      gameState.emailOpen = 1
+    }
     // Inbox from drafts
-    // else if (emailButton.boundingBox()){
-      // gameState.emailOpen = 1
-      // email.object_list[2].txt = obits[0]
-    // }
+    else if (inboxButton.boundingBox()){
+      menu.object_list[2].txt = emailSubjectText[0]
+      menu.object_list[3].txt = emailToText[0]
+      menu.object_list[4].txt = emailTimestampText[0]
+      gameState.inboxOrDrafts = 0
+    }
     // Drafts from inbox
-    // else if (inboxButton.boundingBox()){
-    //   menu.object_list[2].txt = emailSubjectText[0]
-    //   menu.object_list[3].txt = emailToText[0]
-    //   menu.object_list[4].txt = emailTimestampText[0]
-    // }
-    // Inbox from drafts
-    // else if (draftsButton.boundingBox()){
-    //   menu.object_list[2].txt = emailSubjectText[1]
-    //   menu.object_list[3].txt = emailToText[1]
-    //   menu.object_list[4].txt = emailTimestampText[1]
-    // }
+    else if (draftsButton.boundingBox()){
+      menu.object_list[2].txt = emailSubjectText[1]
+      menu.object_list[3].txt = emailToText[1]
+      menu.object_list[4].txt = emailTimestampText[1]
+      gameState.inboxOrDrafts = 1
+      updateEmailByGamestate()
+    }
     // Put down the iPad
     else if (ipadBody.boundingBox() == false) {
       gameState.pickUp = false
@@ -250,8 +254,19 @@ function mouseClicked(){
   }
 }
 
-
 /// EVENTS ///
+
+function updateEmailByGamestate() {
+  if (gameState.inboxOrDrafts == 0 && gameState.clicks < 3) {
+    email.object_list[2].txt = obits[gameState.clicks-1]
+  }
+  else if (gameState.inboxOrDrafts == 0 && gameState.clicks >= 3) {
+    email.object_list[2].txt = obits[3]
+  }
+  else if (gameState.inboxOrDrafts == 1) {
+    email.object_list[2].txt = drafts[0]
+  }
+}
 
 function thePlantsHaveEyes() {
   fill('red')
@@ -298,7 +313,7 @@ function boo() {
 }
 
 function adjust_brightness() {
-  bright_window.alpha = gameState.bright_mod
+  bright_window.a = gameState.bright_mod
 }
 
 // DEBUGGING //

@@ -1,31 +1,30 @@
 
 
 class Box {
-    constructor(x, y, c = '', alpha = 0, stroke=null, stroke_color=0, on_click=null) {
+    constructor(x, y, c = '', a = 0, str=null, str_c=0) {
         this.x = X_(x);
         this.y = Y_(y);
-        this.color = color(c);
-        this.alpha = alpha;
-        this.stroke = stroke;
-        this.stroke_color = stroke_color;
-        this.on_click = on_click;
+        this.c = color(c);
+        this.a = a;
+        this.str = str;
+        this.str_c = str_c;
     }
     setColor() {
-        this.color.setAlpha(this.alpha)
-        fill(this.color)
-        if (this.stroke === null){
+        this.c.setAlpha(this.a)
+        fill(this.c)
+        if (this.str === null){
             noStroke()
         }
         else {
-            strokeWeight(this.stroke)
-            stroke(this.stroke_color)
+            strokeWeight(this.str)
+            stroke(this.str_c)
         }
     }
 }
 
 class Rect extends Box {
-    constructor(x, y, width, height, c, alpha, round=null, stroke=null, stroke_color=0){
-        super(x, y, c, alpha, stroke, stroke_color)
+    constructor(x, y, width, height, c, a, str=null, str_c=0, round=null){
+        super(x, y, c, a, str, str_c)
         this.width = X_(width, false);
         this.height = Y_(height);
         this.round = round
@@ -44,8 +43,8 @@ class Rect extends Box {
 }
 
 class Circle extends Box {
-    constructor(x, y, diameter, c, alpha, stroke=null, stroke_color=0){
-        super(x, y, c, alpha, stroke=null, stroke_color=0)
+    constructor(x, y, diameter, c, a, str=null, str_c=0){
+        super(x, y, c, a, str, str_c)
         this.diameter = X_(diameter, false);
     }
     boundingBox(debug=false) {
@@ -62,8 +61,8 @@ class Circle extends Box {
 }
 
 class Ellipse extends Box {
-    constructor(x, y, width, height, c, alpha, stroke=null, stroke_color=0){
-        super(x, y, c, alpha, stroke, stroke_color)
+    constructor(x, y, width, height, c, a, str=null, str_c=0){
+        super(x, y, c, a, str, str_c)
         this.width = X_(width, false);
         this.height = Y_(height);
     }
@@ -74,8 +73,8 @@ class Ellipse extends Box {
 }
 
 class Polygon extends Box {
-    constructor(points, c, alpha, stroke=null, stroke_color=0) {
-        super(0, 0, c, alpha, stroke, stroke_color)
+    constructor(points, c, a, str=null, str_c=0) {
+        super(0, 0, c, a, str, str_c)
         this.points = points
     }
     display() {
@@ -102,8 +101,8 @@ class Img extends Box {
 }
 
 class TextBox extends Box {
-    constructor(x, y, c='', alpha=255, txt='', style=NORMAL, width=1000, height=20) {
-        super(x, y, c, alpha)
+    constructor(x, y, c='', a=255, txt='', style=NORMAL, width=1000, height=20) {
+        super(x, y, c, a)
         this.width = width
         this.heigh = height
         this.txt = txt
@@ -144,8 +143,8 @@ class GameState {
         this.bright_mod = bright_mod || 0
         this.clicks = clicks || 0
         this.frameSnuffed = frameSnuffed || false
-        this.emailOpen = emailOpen || 0
-        this.inboxOrDrafts = inboxOrDrafts || 1
+        this.emailOpen = emailOpen || 1
+        this.inboxOrDrafts = inboxOrDrafts || 0
         this.lastPutDown = lastPutDown || 0;
     }
 }
