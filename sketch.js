@@ -131,6 +131,11 @@ function setup() {
   plantBox = new Rect(750, 400, 150, 80, 'white', 255, 1)
   plantZoomed = new Img(0, 0, imageWidth, imageHeight, plantImg)
 
+  // PLANT EYES //
+  plantEyeOne = new Circle(800, 480, 5, 'red', 255)
+  plantEyeTwo = new Circle(820, 480, 5, 'red', 255)
+  plantEyes = new CompoundObject([plantEyeOne, plantEyeTwo])
+
   // VIAL //
   vialInPlant = new Ellipse(600, 800, 30, 16, 50, 255)
   vialTop = new Ellipse(700, 500, 15, 8, 50, 255)
@@ -140,17 +145,22 @@ function setup() {
 
   // DRINK VIAL QUESTION PANEL //
   drinkRect = new Rect(0, 0, 1200, 900, 'black', 255)
-  drinkQuestion = new TextBox(500, 300, 'white', 255, 'Will you drink the vial?')
+  drinkQuestion = new TextBox(460, 300, 'white', 255, 'Will you drink the vial?  Choose carefully...')
   drinkYes = new TextBox(500, 400, 'white', 255, 'Yes')
   drinkYesRect = new Rect(500, 400, 10, 10, 'white', 255, 1)
   drinkNo = new TextBox(600, 400, 'white', 255, 'No')
   drinkNoRect = new Rect(600, 400, 10, 10, 'white', 255)
   drink = new CompoundObject([drinkRect, drinkQuestion, drinkYes, drinkNo])
+  gameOverFade = new Rect(0, 0, 1200, 900, 'black', 0)
 
-  // PLANT EYES //
-  plantEyeOne = new Circle(800, 480, 5, 'red', 255)
-  plantEyeTwo = new Circle(820, 480, 5, 'red', 255)
-  plantEyes = new CompoundObject([plantEyeOne, plantEyeTwo])
+  // LEAVE //
+  goodEndgameText = new TextBox(300, 300, 'white', 255, 'You flee the apartment.  Shadows seem to follow you out of the corner of your eye, but you manage to escape...')
+
+  // DRINK THE VIAL //
+  badEndgameText = new TextBox(200, 300, 'white', 255, "You begin to feel strange... before you collapse to the floor.  You shouldn't have trusted him.  They're here already, you can feel them.  They've come for you.")
+
+  // RUN OUT OF TIME //
+  timeOutText = new TextBox(250, 300, 'white', 255, "You feel breath ghost against the back of your neck, hear a skittering behind you...  It seems you've dwelt here too long...")
 
   // ENDGAME //
   blackoutOne = new Rect(200, 100, 350, 300, 'black', 240, 1)
@@ -183,7 +193,7 @@ function draw() {
   }
 
   // FLAME //
-  if (gameState.clicks < 1) {
+  if (gameState.vialFound == false) {
     flame.x += X_(sin(frameCount/10), adjust=false)/5
     illum.x += X_(sin(frameCount/10), adjust=false)/5
     flame.display()
@@ -212,7 +222,7 @@ function draw() {
     letterOnTable.display()
   }
 
-  if (gameState.vialFound == true) {
+  if (gameState.vialFound == true && gameState.gameOver == false) {
     vialOnTable.display()
   }
 
@@ -248,15 +258,29 @@ function draw() {
     letter.display()
   }
 
-  if (frameCount > 18000 && frameCount - gameState.lastPutDown > 100 && frameCount < 18120) {
-    gameState.pickUp = false
-    if (frameCount % 2) {
-      boo.display()
+  if (gameState.gameOver == true) {
+    gameOverFade.a += 1
+    gameOverFade.display()
+    if (frameCount - gameState.gameOverTime > 800 && frameCount - gameState.gameOverTime < 810 && gameState.no == false) {
+      if (frameCount % 2) {
+        boo.display()
+      }
+    }
+    if (frameCount - gameState.gameOverTime < 700 && frameCount - gameState.gameOverTime > 200 && gameState.yes == true) {
+      badEndgameText.display()
+    }
+    if (frameCount - gameState.gameOverTime < 700 && frameCount - gameState.gameOverTime > 200 && gameState.yes == false && gameState.no == false) {
+      timeOutText.display()
+    }
+    if (frameCount - gameState.gameOverTime > 300 && gameState.no == true) {
+      goodEndgameText.display()
     }
   }
-
-  if (frameCount > 18120) {
-    fullBlackout.display()
+  
+  if (frameCount > 17500 && gameState.gameOver == false) {
+    gameState.gameOver = true
+    gameState.gameOverTime = frameCount
+    gameState.pickUp = false
   }
 
   adjust_brightness(gameState.bright_mod)
@@ -264,7 +288,7 @@ function draw() {
 
   // DRAW CURSOR //
 
-  if (ipad_hitbox.boundingBox() && gameState.clicks < 4 && gameState.pickUp == false) {
+  if (ipad_hitbox.boundingBox() && gameState.pickUp == false) {
     cursor(HAND)
   }
   else if (settings_circle.boundingBox() == true) {
@@ -297,93 +321,107 @@ function draw() {
 
 function mouseClicked(){
 
-  // Pick up iPad
-  if (ipad_hitbox.boundingBox() && gameState.pickUp==false) {
-    gameState.pickUp = true
-    gameState.clicks += 1
-    updateEmailByGamestate()
-  }
-  // Open settings by clicking wheel
-  else if (settings_circle.boundingBox() && gameState.settingsOpen == false) {
-    gameState.settingsOpen = true
-  }
-  // Close settings by clicking outside
-  else if (menu_box.boundingBox() == false && gameState.settingsOpen == true){
-    gameState.settingsOpen = false
-  }
-  // Brightness slider
-  else if (settings_menu.object_list[4].boundingBox() && gameState.settingsOpen == true){
-    gameState.bright_mod = Math.abs(mouseY - sliderHeight - sliderY)/sliderHeight * 50
-    settings_menu.object_list[7].y = mouseY
-  }
-  // Zoom in on picture
-  else if (pictureBox.boundingBox() && gameState.pickUp == false && gameState.picZoom == false) {
-    gameState.picZoom = true
-  }
-  // Zoom in on plant
-  else if (plantBox.boundingBox() && gameState.pickUp == false && gameState.plantZoom == false) {
-    gameState.plantZoom = true
-  }
-  else if (vialInPlant.boundingBox() && gameState.plantZoom == true) {
-    gameState.plantZoom = false
-    gameState.vialFound = true
-  }
-  // Zoom out of picture or plant
-  else if (backOutBox.boundingBox() == false && gameState.picZoom == true) {
-    gameState.picZoom = false
-  }
-  else if (backOutBox.boundingBox() == false && gameState.plantZoom == true) {
-    gameState.plantZoom = false
-  }
-  else if (letterBox.boundingBox() == true && gameState.picZoom == true) {
-    gameState.picZoom = false
-    gameState.letterPickUp = true
-    gameState.letterFound = true
-  }
-  else if (letterLarge.boundingBox() == false && gameState.letterPickUp == true) {
-    gameState.letterPickUp = false
-  }
-  else if (letterTableBox.boundingBox() == true && gameState.letterFound == true) {
-    gameState.letterPickUp = true
-  }
-  else if (vialMid.boundingBox() == true && gameState.vialFound == true) {
-    gameState.questionMenu = true
-  }
-  else if (gameState.questionMenu == true) {
-    if (backOutBox.boundingBox() == false && gameState.questionMenu == true) {
-      gameState.questionMenu = false
-    }
-  }
-  // Email stuff
-  else if (gameState.pickUp == true) {
-  // Back button in email
-    if (backButton.boundingBox() && gameState.emailOpen > 0){
-      gameState.emailOpen = 0
-    }
-    // Open an email
-    else if (emailButton.boundingBox()){
-      updateEmailByGamestate()
-      gameState.emailOpen = 1
-    }
-    // Inbox from drafts
-    else if (inboxButton.boundingBox()){
-      menu.object_list[2].txt = emailSubjectText[0]
-      menu.object_list[3].txt = emailToText[0]
-      menu.object_list[4].txt = emailTimestampText[0]
-      gameState.inboxOrDrafts = 0
-    }
-    // Drafts from inbox
-    else if (draftsButton.boundingBox()){
-      menu.object_list[2].txt = emailSubjectText[1]
-      menu.object_list[3].txt = emailToText[1]
-      menu.object_list[4].txt = emailTimestampText[1]
-      gameState.inboxOrDrafts = 1
+  if (gameState.gameOver == false) {
+    // Pick up iPad
+    if (ipad_hitbox.boundingBox() && gameState.pickUp==false) {
+      gameState.pickUp = true
+      gameState.clicks += 1
       updateEmailByGamestate()
     }
-    // Put down the iPad
-    else if (ipadBody.boundingBox() == false) {
-      gameState.pickUp = false
-      gameState.lastPutDown = frameCount
+    // Open settings by clicking wheel
+    else if (settings_circle.boundingBox() && gameState.settingsOpen == false) {
+      gameState.settingsOpen = true
+    }
+    // Close settings by clicking outside
+    else if (menu_box.boundingBox() == false && gameState.settingsOpen == true){
+      gameState.settingsOpen = false
+    }
+    // Brightness slider
+    else if (settings_menu.object_list[4].boundingBox() && gameState.settingsOpen == true){
+      gameState.bright_mod = Math.abs(mouseY - sliderHeight - sliderY)/sliderHeight * 50
+      settings_menu.object_list[7].y = mouseY
+    }
+    // Zoom in on picture
+    else if (pictureBox.boundingBox() && gameState.pickUp == false && gameState.picZoom == false) {
+      gameState.picZoom = true
+    }
+    // Zoom in on plant
+    else if (plantBox.boundingBox() && gameState.pickUp == false && gameState.plantZoom == false) {
+      gameState.plantZoom = true
+    }
+    else if (vialInPlant.boundingBox() && gameState.plantZoom == true) {
+      gameState.plantZoom = false
+      gameState.vialFound = true
+    }
+    // Zoom out of picture or plant
+    else if (backOutBox.boundingBox() == false && gameState.picZoom == true) {
+      gameState.picZoom = false
+    }
+    else if (backOutBox.boundingBox() == false && gameState.plantZoom == true) {
+      gameState.plantZoom = false
+    }
+    else if (letterBox.boundingBox() == true && gameState.picZoom == true) {
+      gameState.picZoom = false
+      gameState.letterPickUp = true
+      gameState.letterFound = true
+    }
+    else if (letterLarge.boundingBox() == false && gameState.letterPickUp == true) {
+      gameState.letterPickUp = false
+    }
+    else if (letterTableBox.boundingBox() == true && gameState.letterFound == true) {
+      gameState.letterPickUp = true
+    }
+    else if (vialMid.boundingBox() == true && gameState.vialFound == true) {
+      gameState.questionMenu = true
+    }
+    else if (gameState.questionMenu == true) {
+      if (backOutBox.boundingBox() == false && gameState.questionMenu == true) {
+        gameState.questionMenu = false
+      }
+      else if (drinkYesRect.boundingBox() == true && gameState.questionMenu == true && gameState.gameOver == false){
+        gameState.yes = true
+        gameState.gameOver = true
+        gameState.gameOverTime = frameCount
+        gameState.questionMenu = false
+      }
+      else if (drinkNoRect.boundingBox() == true && gameState.questionMenu == true && gameState.gameOver == false){
+        gameState.no = true
+        gameState.gameOver = true
+        gameState.gameOverTime = frameCount
+        gameState.questionMenu = false
+      }
+    }
+    // Email stuff
+    else if (gameState.pickUp == true) {
+    // Back button in email
+      if (backButton.boundingBox() && gameState.emailOpen > 0){
+        gameState.emailOpen = 0
+      }
+      // Open an email
+      else if (emailButton.boundingBox()){
+        updateEmailByGamestate()
+        gameState.emailOpen = 1
+      }
+      // Inbox from drafts
+      else if (inboxButton.boundingBox()){
+        menu.object_list[2].txt = emailSubjectText[0]
+        menu.object_list[3].txt = emailToText[0]
+        menu.object_list[4].txt = emailTimestampText[0]
+        gameState.inboxOrDrafts = 0
+      }
+      // Drafts from inbox
+      else if (draftsButton.boundingBox()){
+        menu.object_list[2].txt = emailSubjectText[1]
+        menu.object_list[3].txt = emailToText[1]
+        menu.object_list[4].txt = emailTimestampText[1]
+        gameState.inboxOrDrafts = 1
+        updateEmailByGamestate()
+      }
+      // Put down the iPad
+      else if (ipadBody.boundingBox() == false) {
+        gameState.pickUp = false
+        gameState.lastPutDown = frameCount
+      }
     }
   }
 }
@@ -395,7 +433,7 @@ function updateEmailByGamestate() {
     email.object_list[2].txt = obits[gameState.clicks-1]
   }
   else if (gameState.inboxOrDrafts == 0 && gameState.clicks >= 3) {
-    email.object_list[2].txt = obits[3]
+    email.object_list[2].txt = obits[2]
   }
   else if (gameState.inboxOrDrafts == 1) {
     email.object_list[2].txt = drafts[0]

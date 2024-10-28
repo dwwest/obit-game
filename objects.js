@@ -165,7 +165,7 @@ function snuffedOut(){
 /// GAME STATE OBJECT THAT HOLDS ALL GAME STATE VARIABLES ///
 
 class GameState {
-    constructor(pickUp, settingsOpen, soundOn, bright_mod, clicks, frameSnuffed, emailOpen, inboxOrDrafts, lastPutDown, picZoom, plantZoom, letterFound, vialFound, letterPickUp, questionMenu) {
+    constructor(pickUp, settingsOpen, soundOn, bright_mod, clicks, frameSnuffed, emailOpen, inboxOrDrafts, lastPutDown, picZoom, plantZoom, letterFound, vialFound, letterPickUp, questionMenu, yes, no) {
         this.pickUp = pickUp || false
         this.settingsOpen = settingsOpen || false
         this.soundOn = soundOn|| false
@@ -181,7 +181,10 @@ class GameState {
         this.vialFound = vialFound || false;
         this.letterPickUp = letterPickUp || false;
         this.questionMenu = questionMenu || false;
+        this.yes = yes || false;
+        this.no = no || false;
         this.gameOver = false;
+        this.gameOverTime = 1000000;
     }
 }
 
