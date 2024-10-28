@@ -5,7 +5,9 @@
 // code will adjust to pixel accordingly
 
 function preload(){
-  img = loadImage('assets/apartment.png')
+  apartment = loadImage('assets/apartment.png')
+  pictureFrame = loadImage('assets/apartment_picture.png')
+  plantImg = loadImage('assets/apartment_plant.png')
   jumpscare = loadImage('assets/scary_face.jpg')
   gear = loadImage('assets/gear.png')
   backArrow = loadImage('assets/back_button.jpg')
@@ -109,6 +111,55 @@ function setup() {
   emailContent = new TextBox(ipadScreenX + 60, 250, 'black', 255, obits[0], NORMAL, 300, 450)
   email = new CompoundObject([header, emailBox, emailContent, backButton, backImage])
 
+  // ZOOMS //
+  backOutBox = new Rect(300, 0, 600, 900, 'white', 255, 1)
+
+  // PICTURE //
+  pictureBox = new Rect(570, 170, 100, 130, 'white', 255, 1)
+  picZoomed = new Img(0, 0, imageWidth, imageHeight, pictureFrame)
+
+  // LETTER FROM PICTURE //
+  letterBox = new Rect(650, 780, 100, 10, 40, 255)
+  letterLarge = new Rect(400, 200, 200, 400, 'white', 255)
+  letterContent = 'hi'
+  letterText = new TextBox(405, 205, 'black', 255, letterContent, NORMAL)
+  letter = new CompoundObject([letterLarge, letterText])
+  letterOnTable = new Polygon([[700, 540],[730, 540], [760, 570], [720, 570]], 100, 255)
+  letterTableBox = new Rect(700, 540, 40, 30, 'white', 255)
+
+  // PLANT //
+  plantBox = new Rect(750, 400, 150, 80, 'white', 255, 1)
+  plantZoomed = new Img(0, 0, imageWidth, imageHeight, plantImg)
+
+  // VIAL //
+  vialInPlant = new Ellipse(600, 800, 30, 16, 50, 255)
+  vialTop = new Ellipse(700, 500, 15, 8, 50, 255)
+  vialBottom = new Ellipse(700, 530, 15, 8, '#010E0A', 255)
+  vialMid = new Rect(692, 500, 15, 30, '#010E0A', 255)
+  vialOnTable = new CompoundObject([vialBottom, vialMid, vialTop])
+
+  // DRINK VIAL QUESTION PANEL //
+  drinkRect = new Rect(0, 0, 1200, 900, 'black', 255)
+  drinkQuestion = new TextBox(500, 300, 'white', 255, 'Will you drink the vial?')
+  drinkYes = new TextBox(500, 400, 'white', 255, 'Yes')
+  drinkYesRect = new Rect(500, 400, 10, 10, 'white', 255, 1)
+  drinkNo = new TextBox(600, 400, 'white', 255, 'No')
+  drinkNoRect = new Rect(600, 400, 10, 10, 'white', 255)
+  drink = new CompoundObject([drinkRect, drinkQuestion, drinkYes, drinkNo])
+
+  // PLANT EYES //
+  plantEyeOne = new Circle(800, 480, 5, 'red', 255)
+  plantEyeTwo = new Circle(820, 480, 5, 'red', 255)
+  plantEyes = new CompoundObject([plantEyeOne, plantEyeTwo])
+
+  // ENDGAME //
+  blackoutOne = new Rect(200, 100, 350, 300, 'black', 240, 1)
+  blackoutTwo = new Rect(700, 100, 350, 300, 'black', 240, 1)
+  partialBlackout = new CompoundObject([blackoutOne, blackoutTwo])
+  fullBlackout = new Rect(0, 0, 1200, 900, 'black', 255, 1)
+  
+  boo = new Img(0, 0, 1200, 900, jumpscare)
+
 }
 
 function draw() {
@@ -117,7 +168,7 @@ function draw() {
   background(0)
   
   // DRAW APARTMENT //
-  image(img, X_(0), Y_(0), imageWidth, imageHeight);
+  image(apartment, X_(0), Y_(0), imageWidth, imageHeight);
 
   // SHADOW ON PHOTO //
   photo_shadow.display()
@@ -142,9 +193,9 @@ function draw() {
     snuffedOut()
   }
   
-  // if (clicks >= 4 && frameCount - lastPutDown > 100) {
-  //   blackout()
-  // }
+  if (frameCount > 17500 && gameState.pickUp == false) {
+    partialBlackout.display()
+  }
 
   if (frameCount < 100 || gameState.pickUp == true){
     ipad_dark.display()
@@ -154,7 +205,19 @@ function draw() {
   }
 
   if (gameState.clicks == 3 && frameCount - gameState.lastPutDown < 10) {
-    thePlantsHaveEyes()
+    plantEyes.display()
+  }
+
+  if (gameState.letterPickUp == false && gameState.letterFound == true){
+    letterOnTable.display()
+  }
+
+  if (gameState.vialFound == true) {
+    vialOnTable.display()
+  }
+
+  if (gameState.questionMenu == true) {
+    drink.display()
   }
 
   if (gameState.pickUp == true) {
@@ -166,18 +229,35 @@ function draw() {
     else if (gameState.emailOpen == 1) {
       email.display()
     }
-
   }
 
-  // if (clicks == 4 && pickUp == false && frameCount - lastPutDown > 100 && frameCount - lastPutDown < 110) {
-  //   boo()
-  // }
+  if (gameState.picZoom == true) {
+    picZoomed.display()
+    if (gameState.letterFound == false) {
+      letterBox.display()
+    }
+  }
+  if (gameState.plantZoom == true) {
+    plantZoomed.display()
+    if (gameState.vialFound == false) {
+      vialInPlant.display()
+    }
+  }
 
-  // if (clicks == 4 && pickUp == false && frameCount - lastPutDown > 120) {
-  //   fill('black')
-  //   rect(X_(0), Y_(0), X_(1200, adjust=0), Y_(900))
-  // }
+  if (gameState.letterPickUp == true) {
+    letter.display()
+  }
 
+  if (frameCount > 18000 && frameCount - gameState.lastPutDown > 100 && frameCount < 18120) {
+    gameState.pickUp = false
+    if (frameCount % 2) {
+      boo.display()
+    }
+  }
+
+  if (frameCount > 18120) {
+    fullBlackout.display()
+  }
 
   adjust_brightness(gameState.bright_mod)
   bright_window.display()
@@ -190,14 +270,30 @@ function draw() {
   else if (settings_circle.boundingBox() == true) {
     cursor(HAND)
   }
+  else if (pictureBox.boundingBox() == true && gameState.pickUp == false) {
+    cursor(HAND)
+  }
+  else if (plantBox.boundingBox() == true && gameState.pickUp == false) {
+    cursor(HAND)
+  }
+  else if (letterBox.boundingBox() == true && gameState.picZoom == true & gameState.letterFound == false) {
+    cursor(HAND)
+  }
+  else if (letterTableBox.boundingBox() == true && gameState.letterFound == true && gameState.pickUp == false) {
+    cursor(HAND)
+  }
+  else if (vialInPlant.boundingBox() == true && gameState.vialFound == false && gameState.plantZoom == true) {
+    cursor(HAND)
+  }
+  else if (vialMid.boundingBox() == true && gameState.vialFound == true && gameState.pickUp == false) {
+    cursor(HAND)
+  }
   else {
     cursor(ARROW)
   }
-
 }
 
 /// CLICKS ///
-
 
 function mouseClicked(){
 
@@ -220,6 +316,45 @@ function mouseClicked(){
     gameState.bright_mod = Math.abs(mouseY - sliderHeight - sliderY)/sliderHeight * 50
     settings_menu.object_list[7].y = mouseY
   }
+  // Zoom in on picture
+  else if (pictureBox.boundingBox() && gameState.pickUp == false && gameState.picZoom == false) {
+    gameState.picZoom = true
+  }
+  // Zoom in on plant
+  else if (plantBox.boundingBox() && gameState.pickUp == false && gameState.plantZoom == false) {
+    gameState.plantZoom = true
+  }
+  else if (vialInPlant.boundingBox() && gameState.plantZoom == true) {
+    gameState.plantZoom = false
+    gameState.vialFound = true
+  }
+  // Zoom out of picture or plant
+  else if (backOutBox.boundingBox() == false && gameState.picZoom == true) {
+    gameState.picZoom = false
+  }
+  else if (backOutBox.boundingBox() == false && gameState.plantZoom == true) {
+    gameState.plantZoom = false
+  }
+  else if (letterBox.boundingBox() == true && gameState.picZoom == true) {
+    gameState.picZoom = false
+    gameState.letterPickUp = true
+    gameState.letterFound = true
+  }
+  else if (letterLarge.boundingBox() == false && gameState.letterPickUp == true) {
+    gameState.letterPickUp = false
+  }
+  else if (letterTableBox.boundingBox() == true && gameState.letterFound == true) {
+    gameState.letterPickUp = true
+  }
+  else if (vialMid.boundingBox() == true && gameState.vialFound == true) {
+    gameState.questionMenu = true
+  }
+  else if (gameState.questionMenu == true) {
+    if (backOutBox.boundingBox() == false && gameState.questionMenu == true) {
+      gameState.questionMenu = false
+    }
+  }
+  // Email stuff
   else if (gameState.pickUp == true) {
   // Back button in email
     if (backButton.boundingBox() && gameState.emailOpen > 0){
@@ -250,7 +385,6 @@ function mouseClicked(){
       gameState.pickUp = false
       gameState.lastPutDown = frameCount
     }
-
   }
 }
 
@@ -265,50 +399,6 @@ function updateEmailByGamestate() {
   }
   else if (gameState.inboxOrDrafts == 1) {
     email.object_list[2].txt = drafts[0]
-  }
-}
-
-function thePlantsHaveEyes() {
-  fill('red')
-  circle(X_(800), Y_(480), Y_(5))
-  circle(X_(820), Y_(480), Y_(5))
-}
-
-function snuffedOut(){
-  if (gameState.frameSnuffed == false){
-    gameState.frameSnuffed = frameCount
-  }
-  if ((frameCount - gameState.frameSnuffed) % 10 == 0 || frameCount == gameState.frameSnuffed) {
-    pts = []
-    for (let i = 0; i < 4; i++){
-      pts.push(X_(random(-7,7), adjust=false))
-    }
-  }
-  c = color('white')
-  c.setAlpha(80 + (gameState.frameSnuffed - frameCount)/10)
-  fill(c)
-  beginShape()
-  vertex(X_(450), Y_(510))
-  bezierVertex(X_(440) + pts[1], Y_(480), X_(460) + pts[2], Y_(450), X_(450), Y_(413))
-  bezierVertex(X_(460) + pts[3], Y_(380), X_(440) + pts[4], Y_(340), X_(450), Y_(200))
-  endShape()
-  }
-
-function blackout() {
-  c = color('black')
-  c.setAlpha(240)
-  fill(c)
-  rect(X_(200), Y_(100), X_(350, adjust=false), Y_(300))
-  rect(X_(700), Y_(100), X_(350, adjust=false), Y_(300))
-  c.setAlpha(90)
-  fill(c)
-  rect(X_(0), Y_(0), X_(1200, adjust=false), Y_(900))
-}
-
-function boo() {
-  
-  if (frameCount % 2 == 0) {
-    image(jumpscare, X_(0), Y_(0), X_(1200, adjust=false), Y_(900))
   }
 }
 

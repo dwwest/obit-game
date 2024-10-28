@@ -66,6 +66,13 @@ class Ellipse extends Box {
         this.width = X_(width, false);
         this.height = Y_(height);
     }
+    boundingBox(debug=false){
+        if (debug==true) {
+            fill(color('red'))
+            rect(this.x, this.y, this.width, this.height)
+        }
+        return(Math.abs(this.x - mouseX) <= this.width/2 && Math.abs(this.y - mouseY) <= this.height/2)
+    }
     display() {
         this.setColor()
         ellipse(this.x, this.y, this.width, this.height)
@@ -133,10 +140,32 @@ class CompoundObject {
     }
 }
 
+// SPECIAL FUNCTION FOR THE CANDLE SMOKE //
+
+function snuffedOut(){
+    if (gameState.frameSnuffed == false){
+      gameState.frameSnuffed = frameCount
+    }
+    if ((frameCount - gameState.frameSnuffed) % 10 == 0 || frameCount == gameState.frameSnuffed) {
+      pts = []
+      for (let i = 0; i < 4; i++){
+        pts.push(X_(random(-7,7), adjust=false))
+      }
+    }
+    c = color('white')
+    c.setAlpha(80 + (gameState.frameSnuffed - frameCount)/10)
+    fill(c)
+    beginShape()
+    vertex(X_(450), Y_(510))
+    bezierVertex(X_(440) + pts[1], Y_(480), X_(460) + pts[2], Y_(450), X_(450), Y_(413))
+    bezierVertex(X_(460) + pts[3], Y_(380), X_(440) + pts[4], Y_(340), X_(450), Y_(200))
+    endShape()
+  }
+
 /// GAME STATE OBJECT THAT HOLDS ALL GAME STATE VARIABLES ///
 
 class GameState {
-    constructor(pickUp, settingsOpen, soundOn, bright_mod, clicks, frameSnuffed, emailOpen, inboxOrDrafts, lastPutDown) {
+    constructor(pickUp, settingsOpen, soundOn, bright_mod, clicks, frameSnuffed, emailOpen, inboxOrDrafts, lastPutDown, picZoom, plantZoom, letterFound, vialFound, letterPickUp, questionMenu) {
         this.pickUp = pickUp || false
         this.settingsOpen = settingsOpen || false
         this.soundOn = soundOn|| false
@@ -145,7 +174,14 @@ class GameState {
         this.frameSnuffed = frameSnuffed || false
         this.emailOpen = emailOpen || 1
         this.inboxOrDrafts = inboxOrDrafts || 0
-        this.lastPutDown = lastPutDown || 0;
+        this.lastPutDown = lastPutDown || 0
+        this.picZoom = picZoom || false
+        this.plantZoom = plantZoom || false
+        this.letterFound = letterFound || false
+        this.vialFound = vialFound || false;
+        this.letterPickUp = letterPickUp || false;
+        this.questionMenu = questionMenu || false;
+        this.gameOver = false;
     }
 }
 
