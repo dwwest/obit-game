@@ -4,6 +4,11 @@
 // and 0 and 900 for the height and the 
 // code will adjust to pixel accordingly
 
+// To dos
+// 2) clean up the if statements so they're easier to read
+// 3) Finish writing the rest of the letters and emails
+// 4) have obits change every time you open one, not every time you pick up the ipad <--
+
 function preload(){
   apartment = loadImage('assets/apartment.png')
   pictureFrame = loadImage('assets/apartment_picture.png')
@@ -34,15 +39,14 @@ function setup() {
   
   // SETTINGS MENU OBJECTS //
   menu_box = new Rect(975, 15, 150, 300, 'white', 130, null, 0, 20)
-  sound_text = new TextBox(985, 80, 'black', 255, 'Sound on')
+  sound_text = new TextBox(985, 80, 'black', 255, 'To restart, refresh page')
   bright_text = new TextBox(985, 120, 'black', 255, 'Brightness adjust')
-  sound_clicker = new Circle(1060, 78, 20, 'black', 255)
   sliderX = 1050; sliderY = 150; sliderWidth = 5; sliderHeight = 150
   slider = new Rect(sliderX, sliderY, 5, 150, 'black', 255, null, 0, 10)
   bottom_tick = new Rect(sliderX - 10, sliderY + sliderHeight - 5, 25, sliderWidth, 'black', 255, null, 0, 5)
   top_tick = new Rect(sliderX - 10, sliderY, 25, sliderWidth, 'black', 255, null, 0, 10)
   bright_indicator = new Circle(sliderX + 2.5, sliderY - 2.5 + sliderHeight, 15, 'white', 255)
-  settings_menu = new CompoundObject([menu_box, sound_text, bright_text, sound_clicker, slider, top_tick, bottom_tick, bright_indicator], 0)
+  settings_menu = new CompoundObject([menu_box, sound_text, bright_text, slider, top_tick, bottom_tick, bright_indicator], 0)
 
   // CANDLE //
   candle_color = '#330000'
@@ -129,15 +133,20 @@ function setup() {
 
   // PLANT //
   plantBox = new Rect(750, 400, 150, 80, 'white', 255, 1)
-  plantZoomed = new Img(0, 0, imageWidth, imageHeight, plantImg)
+  plantZoomed = new Img(-200, -800, 1600, 2200, plantImg)
 
   // PLANT EYES //
-  plantEyeOne = new Circle(800, 480, 5, 'red', 255)
-  plantEyeTwo = new Circle(820, 480, 5, 'red', 255)
-  plantEyes = new CompoundObject([plantEyeOne, plantEyeTwo])
+  eyeLocations = [[800, 480, 20], [615, 207, 8], [624, 235, 7], [440, 500, 20], [420, 160, 40], [560, 700, 10]]
+  eyeOne = new Circle(0, 0, 5, 'red', 255)
+  eyeTwo = new Circle(20, 0, 5, 'red', 255)
+  eyes = new CompoundObject([eyeOne, eyeTwo])
+  blinkFreq = 500
 
   // VIAL //
-  vialInPlant = new Ellipse(600, 800, 30, 16, 50, 255)
+  vialInPlantTop = new Ellipse(650, 550, 100, 16, 50, 255)
+  vialInPlantMid = new Rect(600, 550, 100, 50, '#032418', 255)
+  vialInPlantBottom = new Ellipse(650, 600, 100, 16, '#032418', 255)
+  vialInPlant = new CompoundObject([vialInPlantBottom, vialInPlantMid, vialInPlantTop])
   vialTop = new Ellipse(700, 500, 15, 8, 50, 255)
   vialBottom = new Ellipse(700, 530, 15, 8, '#010E0A', 255)
   vialMid = new Rect(692, 500, 15, 30, '#010E0A', 255)
@@ -192,6 +201,15 @@ function draw() {
     settings_menu.display()
   }
 
+  if (frameCount % blinkFreq == 0 && gameState.pickUp == false && gameState.plantZoom == false && gameState.picZoom == false && gameState.letterPickUp == false) {
+    let i = Math.floor(Math.random() * (eyeLocations.length));
+    eyeOne.x = X_(eyeLocations[i][0])
+    eyeOne.y = Y_(eyeLocations[i][1])
+    eyeTwo.x = X_(eyeLocations[i][0] + eyeLocations[i][2])
+    eyeTwo.y = Y_(eyeLocations[i][1])
+    eyes.display()
+  }
+
   // FLAME //
   if (gameState.vialFound == false) {
     flame.x += X_(sin(frameCount/10), adjust=false)/5
@@ -212,10 +230,6 @@ function draw() {
   }
   else {
     glow.display()
-  }
-
-  if (gameState.clicks == 3 && frameCount - gameState.lastPutDown < 10) {
-    plantEyes.display()
   }
 
   if (gameState.letterPickUp == false && gameState.letterFound == true){
@@ -281,6 +295,7 @@ function draw() {
     gameState.gameOver = true
     gameState.gameOverTime = frameCount
     gameState.pickUp = false
+    blinkFreq = 10
   }
 
   adjust_brightness(gameState.bright_mod)
@@ -306,7 +321,7 @@ function draw() {
   else if (letterTableBox.boundingBox() == true && gameState.letterFound == true && gameState.pickUp == false) {
     cursor(HAND)
   }
-  else if (vialInPlant.boundingBox() == true && gameState.vialFound == false && gameState.plantZoom == true) {
+  else if (vialInPlantMid.boundingBox() == true && gameState.vialFound == false && gameState.plantZoom == true) {
     cursor(HAND)
   }
   else if (vialMid.boundingBox() == true && gameState.vialFound == true && gameState.pickUp == false) {
@@ -337,9 +352,9 @@ function mouseClicked(){
       gameState.settingsOpen = false
     }
     // Brightness slider
-    else if (settings_menu.object_list[4].boundingBox() && gameState.settingsOpen == true){
+    else if (settings_menu.object_list[3].boundingBox() && gameState.settingsOpen == true){
       gameState.bright_mod = Math.abs(mouseY - sliderHeight - sliderY)/sliderHeight * 50
-      settings_menu.object_list[7].y = mouseY
+      settings_menu.object_list[6].y = mouseY
     }
     // Zoom in on picture
     else if (pictureBox.boundingBox() && gameState.pickUp == false && gameState.picZoom == false) {
@@ -349,7 +364,7 @@ function mouseClicked(){
     else if (plantBox.boundingBox() && gameState.pickUp == false && gameState.plantZoom == false) {
       gameState.plantZoom = true
     }
-    else if (vialInPlant.boundingBox() && gameState.plantZoom == true) {
+    else if (vialInPlantMid.boundingBox() && gameState.plantZoom == true) {
       gameState.plantZoom = false
       gameState.vialFound = true
     }
@@ -383,12 +398,14 @@ function mouseClicked(){
         gameState.gameOver = true
         gameState.gameOverTime = frameCount
         gameState.questionMenu = false
+        blinkFreq = 50
       }
       else if (drinkNoRect.boundingBox() == true && gameState.questionMenu == true && gameState.gameOver == false){
         gameState.no = true
         gameState.gameOver = true
         gameState.gameOverTime = frameCount
         gameState.questionMenu = false
+        blinkFreq = 1000
       }
     }
     // Email stuff
@@ -443,6 +460,7 @@ function updateEmailByGamestate() {
 function adjust_brightness() {
   bright_window.a = gameState.bright_mod
 }
+
 
 // DEBUGGING //
 
