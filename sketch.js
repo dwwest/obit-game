@@ -123,10 +123,9 @@ function setup() {
   picZoomed = new Img(0, 0, imageWidth, imageHeight, pictureFrame)
 
   // LETTER FROM PICTURE //
-  letterBox = new Rect(650, 780, 100, 10, 40, 255)
+  letterBox = new Rect(650, 780, 100, 5, 40, 255)
   letterLarge = new Rect(400, 200, 200, 400, 'white', 255)
-  letterContent = 'hi'
-  letterText = new TextBox(405, 205, 'black', 255, letterContent, NORMAL)
+  letterText = new TextBox(410, 210, 'black', 255, letter, NORMAL, 190, 390)
   letter = new CompoundObject([letterLarge, letterText])
   letterOnTable = new Polygon([[700, 540],[730, 540], [760, 570], [720, 570]], 100, 255)
   letterTableBox = new Rect(700, 540, 40, 30, 'white', 255)
@@ -143,9 +142,9 @@ function setup() {
   blinkFreq = 500
 
   // VIAL //
-  vialInPlantTop = new Ellipse(650, 550, 100, 16, 50, 255)
-  vialInPlantMid = new Rect(600, 550, 100, 50, '#032418', 255)
-  vialInPlantBottom = new Ellipse(650, 600, 100, 16, '#032418', 255)
+  vialInPlantTop = new Ellipse(650, 550, 100, 16, 8, 255)
+  vialInPlantMid = new Rect(600, 550, 100, 50, 8, 255)
+  vialInPlantBottom = new Ellipse(650, 600, 100, 16, 8, 255)
   vialInPlant = new CompoundObject([vialInPlantBottom, vialInPlantMid, vialInPlantTop])
   vialTop = new Ellipse(700, 500, 15, 8, 50, 255)
   vialBottom = new Ellipse(700, 530, 15, 8, '#010E0A', 255)
@@ -339,9 +338,11 @@ function mouseClicked(){
   if (gameState.gameOver == false) {
     // Pick up iPad
     if (ipad_hitbox.boundingBox() && gameState.pickUp==false) {
-      gameState.pickUp = true
-      gameState.clicks += 1
+      if (gameState.inboxOrDrafts == 0){
+        gameState.clicks += 1
+      }
       updateEmailByGamestate()
+      gameState.pickUp = true
     }
     // Open settings by clicking wheel
     else if (settings_circle.boundingBox() && gameState.settingsOpen == false) {
@@ -416,11 +417,16 @@ function mouseClicked(){
       }
       // Open an email
       else if (emailButton.boundingBox()){
+        if (gameState.inboxOrDrafts == 0) {
+          gameState.clicks += 1
+        }
         updateEmailByGamestate()
         gameState.emailOpen = 1
       }
       // Inbox from drafts
       else if (inboxButton.boundingBox()){
+        gameState.clicks += 1
+        updateEmailByGamestate()
         menu.object_list[2].txt = emailSubjectText[0]
         menu.object_list[3].txt = emailToText[0]
         menu.object_list[4].txt = emailTimestampText[0]
@@ -446,11 +452,11 @@ function mouseClicked(){
 /// EVENTS ///
 
 function updateEmailByGamestate() {
-  if (gameState.inboxOrDrafts == 0 && gameState.clicks < 3) {
+  if (gameState.inboxOrDrafts == 0 && gameState.clicks < obits.length) {
     email.object_list[2].txt = obits[gameState.clicks-1]
   }
-  else if (gameState.inboxOrDrafts == 0 && gameState.clicks >= 3) {
-    email.object_list[2].txt = obits[2]
+  else if (gameState.inboxOrDrafts == 0 && gameState.clicks >= obits.length) {
+    email.object_list[2].txt = obits[obits.length-1]
   }
   else if (gameState.inboxOrDrafts == 1) {
     email.object_list[2].txt = drafts[0]
