@@ -166,6 +166,7 @@ function snuffedOut(){
 
 class GameState {
     constructor(pickUp, settingsOpen, soundOn, bright_mod, clicks, frameSnuffed, emailOpen, inboxOrDrafts, lastPutDown, picZoom, plantZoom, letterFound, vialFound, letterPickUp, questionMenu, yes, no) {
+        this.anyZoomWindow = false;
         this.pickUp = pickUp || false
         this.settingsOpen = settingsOpen || false
         this.soundOn = soundOn|| false

@@ -6,8 +6,6 @@
 
 // To dos
 // 2) clean up the if statements so they're easier to read
-// 3) Finish writing the rest of the letters and emails
-// 4) have obits change every time you open one, not every time you pick up the ipad <--
 
 function preload(){
   apartment = loadImage('assets/apartment.png')
@@ -123,7 +121,7 @@ function setup() {
   picZoomed = new Img(0, 0, imageWidth, imageHeight, pictureFrame)
 
   // LETTER FROM PICTURE //
-  letterBox = new Rect(650, 780, 100, 5, 40, 255)
+  letterBox = new Rect(650, 780, 100, 8, 40, 255)
   letterLarge = new Rect(400, 200, 200, 400, 'white', 255)
   letterText = new TextBox(410, 210, 'black', 255, letter, NORMAL, 190, 390)
   letter = new CompoundObject([letterLarge, letterText])
@@ -160,6 +158,7 @@ function setup() {
   drinkNoRect = new Rect(600, 400, 10, 10, 'white', 255)
   drink = new CompoundObject([drinkRect, drinkQuestion, drinkYes, drinkNo])
   gameOverFade = new Rect(0, 0, 1200, 900, 'black', 0)
+  // add an x to go back to keep searching
 
   // LEAVE //
   goodEndgameText = new TextBox(300, 300, 'white', 255, 'You flee the apartment.  Shadows seem to follow you out of the corner of your eye, but you manage to escape...')
@@ -200,7 +199,7 @@ function draw() {
     settings_menu.display()
   }
 
-  if (frameCount % blinkFreq == 0 && gameState.pickUp == false && gameState.plantZoom == false && gameState.picZoom == false && gameState.letterPickUp == false) {
+  if (frameCount % blinkFreq == 0 && gameState.anyZoomWindow == false) {
     let i = Math.floor(Math.random() * (eyeLocations.length));
     eyeOne.x = X_(eyeLocations[i][0])
     eyeOne.y = Y_(eyeLocations[i][1])
@@ -220,21 +219,24 @@ function draw() {
     snuffedOut()
   }
   
-  if (frameCount > 17500 && gameState.pickUp == false) {
+  if (frameCount > 17500 && gameState.anyZoomWindow == false) {
     partialBlackout.display()
   }
 
-  if (frameCount < 100 || gameState.pickUp == true){
+  // IPAD IS DARK FOR THE FIRST 100 FRAMES, THEN TURNS ON
+  if (frameCount < 100){
     ipad_dark.display()
   }
   else {
     glow.display()
   }
 
+  // DISPLAY LETTER ON TABLE, IF FOUND
   if (gameState.letterPickUp == false && gameState.letterFound == true){
     letterOnTable.display()
   }
 
+  // DISPLAY VIAL ON TABLE, IF FOUND
   if (gameState.vialFound == true && gameState.gameOver == false) {
     vialOnTable.display()
   }
@@ -300,30 +302,37 @@ function draw() {
   adjust_brightness(gameState.bright_mod)
   bright_window.display()
 
+  if (gameState.pickUp == true || gameState.letterPickUp == true || gameState.picZoom == true || gameState.plantZoom == true) {
+    gameState.anyZoomWindow = true
+  }
+  else {
+    gameState.anyZoomWindow = false
+  }
+
   // DRAW CURSOR //
 
-  if (ipad_hitbox.boundingBox() && gameState.pickUp == false) {
+  if (ipad_hitbox.boundingBox() && gameState.anyZoomWindow == false) {
     cursor(HAND)
   }
   else if (settings_circle.boundingBox() == true) {
     cursor(HAND)
   }
-  else if (pictureBox.boundingBox() == true && gameState.pickUp == false) {
+  else if (pictureBox.boundingBox() == true && gameState.anyZoomWindow == false) {
     cursor(HAND)
   }
-  else if (plantBox.boundingBox() == true && gameState.pickUp == false) {
+  else if (plantBox.boundingBox() == true && gameState.anyZoomWindow == false) {
     cursor(HAND)
   }
   else if (letterBox.boundingBox() == true && gameState.picZoom == true & gameState.letterFound == false) {
     cursor(HAND)
   }
-  else if (letterTableBox.boundingBox() == true && gameState.letterFound == true && gameState.pickUp == false) {
+  else if (letterTableBox.boundingBox() == true && gameState.letterFound == true && gameState.anyZoomWindow == false) {
     cursor(HAND)
   }
   else if (vialInPlantMid.boundingBox() == true && gameState.vialFound == false && gameState.plantZoom == true) {
     cursor(HAND)
   }
-  else if (vialMid.boundingBox() == true && gameState.vialFound == true && gameState.pickUp == false) {
+  else if (vialMid.boundingBox() == true && gameState.vialFound == true && gameState.anyZoomWindow == false) {
     cursor(HAND)
   }
   else {
@@ -333,11 +342,14 @@ function draw() {
 
 /// CLICKS ///
 
+// you can click on things when the photo is up, the photo and the plant
+// same here
+
 function mouseClicked(){
 
   if (gameState.gameOver == false) {
     // Pick up iPad
-    if (ipad_hitbox.boundingBox() && gameState.pickUp==false) {
+    if (ipad_hitbox.boundingBox() && gameState.anyZoomWindow==false) {
       if (gameState.inboxOrDrafts == 0){
         gameState.clicks += 1
       }
@@ -358,38 +370,45 @@ function mouseClicked(){
       settings_menu.object_list[6].y = mouseY
     }
     // Zoom in on picture
-    else if (pictureBox.boundingBox() && gameState.pickUp == false && gameState.picZoom == false) {
+    else if (pictureBox.boundingBox() && gameState.anyZoomWindow == false) {
       gameState.picZoom = true
     }
     // Zoom in on plant
-    else if (plantBox.boundingBox() && gameState.pickUp == false && gameState.plantZoom == false) {
+    else if (plantBox.boundingBox() && gameState.anyZoomWindow == false) {
       gameState.plantZoom = true
     }
+    // Pick up the vial and zoom out of plant
     else if (vialInPlantMid.boundingBox() && gameState.plantZoom == true) {
       gameState.plantZoom = false
       gameState.vialFound = true
     }
-    // Zoom out of picture or plant
+    // Zoom out of picture
     else if (backOutBox.boundingBox() == false && gameState.picZoom == true) {
       gameState.picZoom = false
     }
+    // Zoom out of plant
     else if (backOutBox.boundingBox() == false && gameState.plantZoom == true) {
       gameState.plantZoom = false
     }
+    // Pick up the letter from picture frame and zoom out of picture
     else if (letterBox.boundingBox() == true && gameState.picZoom == true) {
       gameState.picZoom = false
       gameState.letterPickUp = true
       gameState.letterFound = true
     }
+    // Put down letter on table
     else if (letterLarge.boundingBox() == false && gameState.letterPickUp == true) {
       gameState.letterPickUp = false
     }
-    else if (letterTableBox.boundingBox() == true && gameState.letterFound == true) {
+    // Pick up letter from table
+    else if (letterTableBox.boundingBox() == true && gameState.letterFound == true && gameState.anyZoomWindow == false) {
       gameState.letterPickUp = true
     }
-    else if (vialMid.boundingBox() == true && gameState.vialFound == true) {
+    // Pick up vial and get final question
+    else if (vialMid.boundingBox() == true && gameState.vialFound == true && gameState.anyZoomWindow == false) {
       gameState.questionMenu = true
     }
+    // Exit final question menu
     else if (gameState.questionMenu == true) {
       if (backOutBox.boundingBox() == false && gameState.questionMenu == true) {
         gameState.questionMenu = false
@@ -417,14 +436,14 @@ function mouseClicked(){
       }
       // Open an email
       else if (emailButton.boundingBox()){
-        if (gameState.inboxOrDrafts == 0) {
+        if (gameState.inboxOrDrafts == 0 && gameState.emailOpen == 0) {
           gameState.clicks += 1
         }
         updateEmailByGamestate()
         gameState.emailOpen = 1
       }
       // Inbox from drafts
-      else if (inboxButton.boundingBox()){
+      else if (inboxButton.boundingBox() && gameState.emailOpen == 0){
         gameState.clicks += 1
         updateEmailByGamestate()
         menu.object_list[2].txt = emailSubjectText[0]
@@ -433,7 +452,7 @@ function mouseClicked(){
         gameState.inboxOrDrafts = 0
       }
       // Drafts from inbox
-      else if (draftsButton.boundingBox()){
+      else if (draftsButton.boundingBox() && gameState.emailOpen == 0){
         menu.object_list[2].txt = emailSubjectText[1]
         menu.object_list[3].txt = emailToText[1]
         menu.object_list[4].txt = emailTimestampText[1]
